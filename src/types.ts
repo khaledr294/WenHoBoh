@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Role = 'customer' | 'pharmacy' | 'admin' | 'splitscreen';
+export type Role = 'customer' | 'pharmacy' | 'admin' | 'splitscreen' | 'gateway';
 
 export type Language = 'ar' | 'en';
 

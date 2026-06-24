@@ -3,8 +3,14 @@ import { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, updateDoc, 
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Pharmacy, CustomerRequest, PharmacyResponse, Reservation, SystemEvent } from '../types';
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Safely handle potential ESM/CJS bundler wrapping on JSON imports
+const config = (firebaseConfig as any).default || firebaseConfig;
+
+console.log("Initializing Firebase with project:", config.projectId);
+console.log("Using Firestore Database ID:", config.firestoreDatabaseId);
+
+const app = initializeApp(config);
+export const db = getFirestore(app, config.firestoreDatabaseId || undefined);
 
 enum OperationType {
   CREATE = 'create',
@@ -42,10 +48,9 @@ import { getDocFromServer } from 'firebase/firestore';
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'systemEvents', 'connection_test'));
+    console.log("Firebase/Firestore Connection established successfully! Database ID:", config.firestoreDatabaseId);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('offline')) {
-      console.error("Please check your Firebase configuration or network status.");
-    }
+    console.error("Firebase/Firestore Connection test failed! Error details:", error);
   }
 }
 testConnection();
@@ -203,7 +208,7 @@ export async function addSystemEvent(event: SystemEvent) {
 export async function wipeFirestoreData() {
   try {
     // We fetch and delete all documents in collections for the reset action
-    const colNames = ['customerRequests', 'pharmacyResponses', 'reservations', 'systemEvents'];
+    const colNames = ['pharmacies', 'customerRequests', 'pharmacyResponses', 'reservations', 'systemEvents'];
     for (const colName of colNames) {
       const snap = await getDocs(collection(db, colName));
       for (const docSnap of snap.docs) {
