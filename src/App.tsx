@@ -158,12 +158,6 @@ export default function App() {
     return saved ? JSON.parse(saved) : { phone: '', name: '', isRegistered: false };
   });
 
-  // Simulated AI replies toggler (highly helpful for showing direct value)
-  const [aiRepliesEnabled, setAiRepliesEnabled] = useState<boolean>(() => {
-    const saved = localStorage.getItem('wenhoboh_aiRepliesEnabled');
-    return saved ? JSON.parse(saved) === 'true' : true;
-  });
-
   // Set up Firestore Listeners on Mount
   useEffect(() => {
     // 1. Listen to pharmacies
@@ -215,10 +209,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('wenhoboh_user', JSON.stringify(user));
   }, [user]);
-
-  useEffect(() => {
-    localStorage.setItem('wenhoboh_aiRepliesEnabled', String(aiRepliesEnabled));
-  }, [aiRepliesEnabled]);
 
   // Sound generator function for alert beeps
   const triggerNotificationSound = () => {
@@ -304,76 +294,6 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [events.length]);
 
-  // AUTOMATED AI PHARMACY REPLIES SIMULATOR
-  useEffect(() => {
-    if (!activeRequest || !aiRepliesEnabled || activeRequest.status !== 'active') return;
-
-    // Simulate random replies from pharmacies not currently navigated by the user
-    const pIds = pharmacies.map(p => p.id);
-    
-    // Choose 2 random pharmacies to respond automatically
-    const timeoutIds: any[] = [];
-
-    // Pharmacy 1 responds as "Available" after 3 seconds
-    const timer1 = setTimeout(() => {
-      const pharm = pharmacies.find(p => p.id === 'p-nahdi');
-      if (pharm && activeRequest.status === 'active') {
-        const alreadyResponded = responses.some(r => r.requestId === activeRequest.id && r.pharmacyId === pharm.id);
-        if (!alreadyResponded) {
-          const newResponse: PharmacyResponse = {
-            id: 'resp-' + Math.random().toString(36).substr(2, 5),
-            requestId: activeRequest.id,
-            pharmacyId: pharm.id,
-            status: 'available',
-            price: activeRequest.category === 'rx' ? 74.50 : 15.00,
-            notes: lang === 'ar' ? 'متوفر لدينا وجاهز للتسليم الفوري' : 'In stock, ready for immediate delivery',
-            respondedAt: new Date().toLocaleTimeString()
-          };
-          submitPharmacyResponse(newResponse);
-          handleLogEvent(
-            'response_sent',
-            `أرسلت صيدلية النهدي الكبرى رداً تلقائياً بـ: متوفر - السعر ${newResponse.price} ريال`,
-            `Al Nahdi Pharmacy sent auto-response: Available - Price ${newResponse.price} SAR`
-          );
-        }
-      }
-    }, 3200);
-    timeoutIds.push(timer1);
-
-    // Pharmacy 2 responds as "Alternative Available" after 6.5 seconds
-    const timer2 = setTimeout(() => {
-      const pharm = pharmacies.find(p => p.id === 'p-kunooz');
-      if (pharm && activeRequest.status === 'active') {
-        const alreadyResponded = responses.some(r => r.requestId === activeRequest.id && r.pharmacyId === pharm.id);
-        if (!alreadyResponded) {
-          const isInsulin = activeRequest.productName.toLowerCase().includes('insul') || activeRequest.productName.includes('أنسولين');
-          const altName = isInsulin ? 'Humalog Mix 50' : 'Solpadeine Soluble';
-          const newResponse: PharmacyResponse = {
-            id: 'resp-' + Math.random().toString(36).substr(2, 5),
-            requestId: activeRequest.id,
-            pharmacyId: pharm.id,
-            status: 'alternative',
-            alternativeName: altName,
-            price: isInsulin ? 120.00 : 18.00,
-            notes: lang === 'ar' ? 'لدينا هذا البديل بنفس الفعالية الطبية' : 'We carry this identical clinical substitute',
-            respondedAt: new Date().toLocaleTimeString()
-          };
-          submitPharmacyResponse(newResponse);
-          handleLogEvent(
-            'response_sent',
-            `أقرت صيدلية كنوز الدواء بتوفر بديل للمريض: (${altName}) بسعر ${newResponse.price} ريال`,
-            `Kunooz Pharmacy proposed alternative: (${altName}) - Price ${newResponse.price} SAR`
-          );
-        }
-      }
-    }, 6500);
-    timeoutIds.push(timer2);
-
-    return () => {
-      timeoutIds.forEach(id => clearTimeout(id));
-    };
-  }, [activeRequest, aiRepliesEnabled]);
-
   const addResponse = (res: PharmacyResponse) => {
     submitPharmacyResponse(res);
   };
@@ -421,7 +341,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route element={<Layout lang={lang} setLang={setLang} aiRepliesEnabled={aiRepliesEnabled} setAiRepliesEnabled={setAiRepliesEnabled} />}>
+      <Route element={<Layout lang={lang} setLang={setLang} />}>
         <Route index element={<Gateway lang={lang} />} />
         
         <Route path="auth/customer" element={<AuthPage role="customer" lang={lang} />} />
@@ -445,8 +365,6 @@ export default function App() {
               </div>
               <div className="lg:col-span-7">
                 <CustomerPortal 
-                  user={user}
-                  setUser={setUser}
                   pharmacies={pharmacies}
                   activeRequest={activeRequest}
                   setActiveRequest={handleSetActiveRequest}

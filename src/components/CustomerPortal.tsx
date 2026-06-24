@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../lib/AuthContext';
 import { 
   CustomerRequest, 
   Pharmacy, 
@@ -31,8 +32,6 @@ import {
 } from 'lucide-react';
 
 interface CustomerPortalProps {
-  user: UserProfile;
-  setUser: (user: UserProfile) => void;
   pharmacies: Pharmacy[];
   activeRequest: CustomerRequest | null;
   setActiveRequest: (req: CustomerRequest | null) => void;
@@ -54,8 +53,6 @@ const PRESET_PRODUCTS = [
 ];
 
 export default function CustomerPortal({
-  user,
-  setUser,
   pharmacies,
   activeRequest,
   setActiveRequest,
@@ -67,13 +64,14 @@ export default function CustomerPortal({
   onLogEvent,
   customerCoords,
 }: CustomerPortalProps) {
-  // Authentication states
-  const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [otpTimer, setOtpTimer] = useState(60);
+  const { user: firebaseUser } = useAuth();
+  
+  // Extract user info from Firebase user
+  const user = {
+    phone: firebaseUser?.phoneNumber || firebaseUser?.email || '',
+    name: firebaseUser?.displayName || 'عميل مسجل',
+    isRegistered: true,
+  };
 
   // Request form states
   const [productName, setProductName] = useState('');
@@ -121,51 +119,6 @@ export default function CustomerPortal({
     }
     return () => clearInterval(timer);
   }, [activeReservation, reservationTimeLeft]);
-
-  // Handle OTP countdown timer
-  useEffect(() => {
-    let interval: any;
-    if (otpSent && otpTimer > 0) {
-      interval = setInterval(() => {
-        setOtpTimer(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [otpSent, otpTimer]);
-
-  const handleSendOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phone || phone.length < 9) {
-      setOtpError(lang === 'ar' ? 'الرجاء إدخال رقم جوال صحيح' : 'Please enter a valid phone number');
-      return;
-    }
-    setOtpSent(true);
-    setOtpTimer(60);
-    setOtpError('');
-    onLogEvent(
-      'request_created',
-      `تم إرسال رمز التحقق المؤقت (OTP) إلى الرقم ${phone}`,
-      `One-time password (OTP) sent to ${phone}`
-    );
-  };
-
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpCode === '1234' || otpCode === '123456' || otpCode.length >= 4) {
-      setUser({
-        phone,
-        name: name || (lang === 'ar' ? 'عميل عنيزة' : 'Unaizah Customer'),
-        isRegistered: true,
-      });
-      onLogEvent(
-        'request_created',
-        `تم تسجيل دخول المستخدم بنجاح بالرقم ${phone}`,
-        `User logged in successfully with number ${phone}`
-      );
-    } else {
-      setOtpError(lang === 'ar' ? 'رمز التحقق غير صحيح، أدخل 1234 للمحاكاة' : 'Invalid OTP. Enter 1234 to simulate.');
-    }
-  };
 
   // Preset fill helper
   const handleSelectPreset = (preset: typeof PRESET_PRODUCTS[0]) => {
@@ -352,130 +305,6 @@ export default function CustomerPortal({
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  // LOGIN SCREEN
-  if (!user.isRegistered) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-md mx-auto shadow-2xl font-sans text-slate-100">
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-emerald-950 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-950/50">
-            <Phone className="w-6 h-6 text-emerald-400" />
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight text-white mb-2 font-display">
-            {lang === 'ar' ? 'بوابة طالبي الدواء' : 'Customer Portal'}
-          </h2>
-          <p className="text-slate-400 text-sm">
-            {lang === 'ar' 
-              ? 'سجل برقم جوالك لتبث طلبك فوراً إلى صيدليات عنيزة' 
-              : 'Enter your mobile number to broadcast to pharmacies in Unaizah'}
-          </p>
-        </div>
-
-        {!otpSent ? (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-mono">
-                {lang === 'ar' ? 'الاسم (اختياري)' : 'Name (Optional)'}
-              </label>
-              <input
-                type="text"
-                placeholder={lang === 'ar' ? 'مثال: خالد رجب' : 'e.g. Khaled Ragab'}
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-mono">
-                {lang === 'ar' ? 'رقم الجوال السعودي' : 'Saudi Mobile Number'}
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-3.5 text-slate-500 text-sm font-mono" dir="ltr">
-                  +966
-                </span>
-                <input
-                  type="tel"
-                  placeholder="5xxxxxxxx"
-                  required
-                  value={phone}
-                  onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-16 pr-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none transition font-mono"
-                />
-              </div>
-            </div>
-
-            {otpError && (
-              <div className="p-3 bg-red-950/50 border border-red-800/50 rounded-xl text-xs text-red-400 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                <span>{otpError}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl py-3 shadow-lg shadow-emerald-950/20 active:scale-98 transition duration-150"
-            >
-              {lang === 'ar' ? 'إرسال رمز التحقق (OTP)' : 'Send OTP Verification'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="bg-slate-950/50 border border-slate-800 p-3.5 rounded-xl text-center mb-4">
-              <span className="text-xs text-slate-400 block mb-1">
-                {lang === 'ar' ? 'تم إرسال رمز تجريبي إلى رقمك' : 'Demo OTP sent to'}
-              </span>
-              <span className="font-mono text-emerald-400 font-semibold" dir="ltr">
-                +966 {phone}
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-mono">
-                {lang === 'ar' ? 'أدخل رمز التحقق (OTP)' : 'Enter Verification Code'}
-              </label>
-              <input
-                type="text"
-                placeholder="1234"
-                required
-                maxLength={6}
-                value={otpCode}
-                onChange={e => setOtpCode(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-[0.5em] text-white placeholder-slate-700 focus:outline-none transition"
-              />
-              <span className="text-[10px] text-slate-500 mt-2 block text-center">
-                {lang === 'ar' ? 'أدخل أي رمز (مثال: 1234) للمحاكاة والعبور' : 'Enter any code (e.g., 1234) to simulate'}
-              </span>
-            </div>
-
-            {otpError && (
-              <div className="p-3 bg-red-950/50 border border-red-800/50 rounded-xl text-xs text-red-400 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                <span>{otpError}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl py-3 shadow-lg shadow-emerald-950/20 transition duration-150 active:scale-98"
-            >
-              {lang === 'ar' ? 'تأكيد ودخول' : 'Confirm & Log In'}
-            </button>
-
-            <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => setOtpSent(false)}
-                className="text-xs text-slate-400 hover:text-white underline transition"
-              >
-                {lang === 'ar' ? 'تعديل رقم الجوال' : 'Edit Phone Number'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    );
-  }
 
   // ACTIVE RESERVATION VIEW
   if (activeReservation) {
@@ -752,12 +581,6 @@ export default function CustomerPortal({
             {user.name}
           </h2>
         </div>
-        <button
-          onClick={() => setUser({ phone: '', name: '', isRegistered: false })}
-          className="text-[10px] text-slate-500 hover:text-red-400 border border-slate-800 hover:border-red-950 px-2.5 py-1.5 rounded-lg transition"
-        >
-          {lang === 'ar' ? 'خروج' : 'Log Out'}
-        </button>
       </div>
 
       {/* Main Form (Hidden if there's an active request awaiting results) */}

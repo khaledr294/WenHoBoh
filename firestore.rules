@@ -7,30 +7,47 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Pharmacies Collection: anyone can read; admins or pharmacists can manage (write)
+    // Pharmacies Collection
     match /pharmacies/{pharmacyId} {
       allow read: if true;
-      allow write: if true; // In pilot phase, allow unauthenticated setup for adding pharmacies
+      allow write: if request.auth != null && request.auth.uid == pharmacyId;
     }
 
-    // CustomerRequests Collection: anyone can read/write to participate in requests
+    // Customers Collection
+    match /customers/{customerId} {
+      allow read: if request.auth != null && request.auth.uid == customerId;
+      allow write: if request.auth != null && request.auth.uid == customerId;
+    }
+
+    // CustomerRequests Collection
     match /customerRequests/{requestId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if false;
     }
 
-    // PharmacyResponses Collection: pharmacies submit offers, customers read them
+    // PharmacyResponses Collection
     match /pharmacyResponses/{responseId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == resource.data.pharmacyId;
+      allow delete: if false;
     }
 
-    // Reservations Collection: customers reserve products, pharmacies update status
+    // Reservations Collection
     match /reservations/{reservationId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if false;
     }
 
-    // SystemEvents Collection: read and write audit events
+    // SystemEvents Collection
     match /systemEvents/{eventId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if true; // Open temporarily for logging
+      allow update, delete: if false;
     }
   }
 }

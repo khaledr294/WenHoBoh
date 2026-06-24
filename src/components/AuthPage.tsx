@@ -66,7 +66,13 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
         navigate(`/${role}`);
       }
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      if (err.code === 'auth/operation-not-allowed') {
+        setError(lang === 'ar' 
+          ? 'يرجى تفعيل خيار تسجيل الدخول بالبريد الإلكتروني وكلمة المرور من لوحة تحكم Firebase'
+          : 'Please enable Email/Password authentication provider in your Firebase Console');
+      } else {
+        setError(err.message || 'Authentication failed');
+      }
     } finally {
       setLoading(false);
     }

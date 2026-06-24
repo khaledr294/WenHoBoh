@@ -4,7 +4,7 @@ import { Language } from '../types';
 import { Globe, LogOut, Bot, Heart } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
-export default function Layout({ lang, setLang, aiRepliesEnabled, setAiRepliesEnabled }: any) {
+export default function Layout({ lang, setLang }: any) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
@@ -41,20 +41,6 @@ export default function Layout({ lang, setLang, aiRepliesEnabled, setAiRepliesEn
 
           {/* Controls Panel */}
           <div className="flex items-center gap-2.5">
-            {/* AI replies simulator toggler */}
-            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-xl">
-              <Bot className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[9px] md:text-xs text-slate-300 font-semibold hidden md:inline">
-                {lang === 'ar' ? 'محاكاة ردود الصيدليات' : 'Auto AI Replies'}
-              </span>
-              <button
-                onClick={() => setAiRepliesEnabled(!aiRepliesEnabled)}
-                className={`w-7 h-4 rounded-full transition-colors relative flex items-center ${aiRepliesEnabled ? 'bg-emerald-500' : 'bg-slate-800'}`}
-              >
-                <span className={`w-3 h-3 rounded-full bg-white shadow transition-transform absolute ${aiRepliesEnabled ? 'translate-x-3.5' : 'translate-x-0.5'}`}></span>
-              </button>
-            </div>
-
             {/* Exit/Logout Button */}
             {user && (
               <button
