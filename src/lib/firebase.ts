@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, limit, addDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Pharmacy, CustomerRequest, PharmacyResponse, Reservation, SystemEvent } from '../types';
 
@@ -10,6 +11,7 @@ console.log("Initializing Firebase with project:", config.projectId);
 console.log("Using Firestore Database ID:", config.firestoreDatabaseId);
 
 const app = initializeApp(config);
+export const auth = getAuth(app);
 export const db = getFirestore(app, config.firestoreDatabaseId || undefined);
 
 enum OperationType {
