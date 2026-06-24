@@ -15,7 +15,10 @@ import {
   XCircle, 
   UserCheck, 
   Calendar,
-  Layers
+  Layers,
+  Globe,
+  Key,
+  Cloud
 } from 'lucide-react';
 
 interface AdminPortalProps {
@@ -259,6 +262,92 @@ export default function AdminPortal({
           </button>
         </div>
       )}
+
+      {/* دليل التشغيل والإنتاج والخرائط الفعلي - Production Deployment & Maps Setup Guide */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <Globe className="w-5 h-5 text-sky-400" />
+          <div>
+            <h3 className="text-sm font-bold text-white">
+              {lang === 'ar' ? 'دليل التشغيل والإنتاج الفعلي 🚀' : 'Production Deployment & Launch Guide 🚀'}
+            </h3>
+            <p className="text-[10px] text-slate-400">
+              {lang === 'ar' ? 'جاهز للتشغيل الحي والميداني الفوري لخدمة المجتمع' : 'Fully prepared for direct field and community launch'}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4 text-xs">
+          {/* Step 1: Firebase Cloud DB */}
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 space-y-1.5">
+            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+              <Cloud className="w-4 h-4" />
+              <span>{lang === 'ar' ? '1. قاعدة بيانات سحابية حقيقية ومباشرة' : '1. Real & Live Cloud Database'}</span>
+            </div>
+            <p className="text-slate-300 leading-relaxed text-[11px]">
+              {lang === 'ar' 
+                ? 'البرنامج تم ربطه وتفعيله بالكامل على قاعدة بيانات سحابية حقيقية (Firebase Firestore) وهي تعمل بكفاءة حية وبدون فترات انقطاع. أي طلب، رد، صيدلية جديدة، أو حجز يتم مزامنته فوراً في نفس اللحظة عبر الويب لجميع الصيدليات والعملاء!' 
+                : 'The application is completely integrated with a high-performance live cloud database (Firebase Firestore). All pharmacy updates, customer broadcasts, responses, and booking locks sync instantly in real-time across the entire network.'}
+            </p>
+          </div>
+
+          {/* Step 2: Google Maps Key */}
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 space-y-2">
+            <div className="flex items-center gap-2 text-sky-400 font-bold">
+              <Key className="w-4 h-4" />
+              <span>{lang === 'ar' ? '2. كيفية الحصول على مفتاح خرائط جوجل الحقيقي' : '2. How to Get a Real Google Maps Key'}</span>
+            </div>
+            <p className="text-slate-300 leading-relaxed text-[11px]">
+              {lang === 'ar'
+                ? 'لتشغيل خرائط جوجل الحقيقية واحتساب المسارات الواقعية بدقة في عنيزة، اتبع الخطوات التالية للحصول على المفتاح:'
+                : 'To display official Google Maps & compute precise driving times, follow these steps to secure your API Key:'}
+            </p>
+            <ol className="list-decimal list-inside text-[11px] text-slate-400 space-y-1 pl-1">
+              <li>
+                {lang === 'ar'
+                  ? 'اذهب إلى منصة جوجل السحابية: console.cloud.google.com'
+                  : 'Go to Google Cloud Console at console.cloud.google.com'}
+              </li>
+              <li>
+                {lang === 'ar'
+                  ? 'أنشئ مشروعاً جديداً ثم فعل مكتبة: Maps JavaScript API و Directions API.'
+                  : 'Create a new project and enable both the Maps JavaScript API and Directions API.'}
+              </li>
+              <li>
+                {lang === 'ar'
+                  ? 'اذهب إلى Credentials ثم أنشئ مفتاح واجهة برمجة تطبيقات (API Key).'
+                  : 'Under Credentials, generate a new API Key.'}
+              </li>
+              <li>
+                {lang === 'ar'
+                  ? 'قم بتفعيل الفوترة (Billing) على المشروع (تمنحك جوجل رصيداً مجانياً 200$ شهرياً، وهو ما يغطي آلاف الطلبات مجاناً).'
+                  : 'Ensure Billing is active (Google awards $200 free credits monthly, fully covering early to mid stages).'}
+              </li>
+              <li>
+                {lang === 'ar'
+                  ? 'انسخ المفتاح وضعه في قائمة الإعدادات (⚙️ Settings -> Secrets) باسم GOOGLE_MAPS_PLATFORM_KEY.'
+                  : 'Copy your key and place it under ⚙️ Settings -> Secrets as GOOGLE_MAPS_PLATFORM_KEY.'}
+              </li>
+            </ol>
+          </div>
+
+          {/* Step 3: Cloudflare Hosting */}
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 space-y-1.5">
+            <div className="flex items-center gap-2 text-purple-400 font-bold">
+              <Globe className="w-4 h-4" />
+              <span>{lang === 'ar' ? '3. الاستضافة والرفع المجاني على Cloudflare' : '3. Free Production Hosting on Cloudflare'}</span>
+            </div>
+            <p className="text-slate-300 leading-relaxed text-[11px]">
+              {lang === 'ar'
+                ? 'لقد قمنا بإعداد وتضمين ملف wrangler.json لتكون المنصة جاهزة تماماً للرفع بضغطة زر واحدة مجاناً ومدى الحياة على شبكة Cloudflare Pages السريعة. للرفع الفعلي:'
+                : 'We have compiled and pre-configured wrangler.json, enabling instant lifetime-free deployment directly to Cloudflare Pages high-speed global CDN.'}
+            </p>
+            <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-[10.5px] font-mono text-purple-300 select-all">
+              npm run build && npx wrangler deploy
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Real-time Event Log */}
       <div className="space-y-3">
