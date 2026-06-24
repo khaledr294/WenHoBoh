@@ -1,5 +1,6 @@
 {
-  "name": "wenhoboh-pharmacies",
+  "name": "wenhoboh",
+  "compatibility_date": "2026-06-24",
   "assets": {
     "directory": "./dist"
   }
