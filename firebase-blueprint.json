@@ -1,0 +1,111 @@
+{
+  "entities": {
+    "Pharmacy": {
+      "title": "Pharmacy",
+      "description": "Represents a physical pharmacy in the network.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nameAr": { "type": "string" },
+        "nameEn": { "type": "string" },
+        "addressAr": { "type": "string" },
+        "addressEn": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "licenseNumber": { "type": "string" },
+        "rating": { "type": "number" },
+        "responseRate": { "type": "number" },
+        "avgResponseTimeSec": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "pending", "suspended"] }
+      },
+      "required": ["id", "nameAr", "nameEn", "latitude", "longitude", "status"]
+    },
+    "CustomerRequest": {
+      "title": "CustomerRequest",
+      "description": "A medical demand broadcasted by a client.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productName": { "type": "string" },
+        "category": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "radiusKm": { "type": "number" },
+        "prescriptionImage": { "type": "string" },
+        "notes": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "fulfilled", "expired", "cancelled"] },
+        "createdAt": { "type": "string" },
+        "expiresAt": { "type": "string" }
+      },
+      "required": ["id", "productName", "category", "latitude", "longitude", "radiusKm", "status", "createdAt", "expiresAt"]
+    },
+    "PharmacyResponse": {
+      "title": "PharmacyResponse",
+      "description": "A response or quotation from a pharmacy for a customer request.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "requestId": { "type": "string" },
+        "pharmacyId": { "type": "string" },
+        "status": { "type": "string", "enum": ["available", "not_available", "alternative"] },
+        "alternativeName": { "type": "string" },
+        "price": { "type": "number" },
+        "notes": { "type": "string" },
+        "respondedAt": { "type": "string" }
+      },
+      "required": ["id", "requestId", "pharmacyId", "status", "respondedAt"]
+    },
+    "Reservation": {
+      "title": "Reservation",
+      "description": "A product reservation booking made by a customer at a specific pharmacy.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "requestId": { "type": "string" },
+        "responseId": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "pharmacyId": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "completed", "expired", "cancelled_customer", "cancelled_pharmacy", "no_show"] },
+        "reservedAt": { "type": "string" },
+        "expiresAt": { "type": "string" }
+      },
+      "required": ["id", "requestId", "responseId", "customerPhone", "pharmacyId", "status", "reservedAt", "expiresAt"]
+    },
+    "SystemEvent": {
+      "title": "SystemEvent",
+      "description": "A real-time logging event for the system audit log.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "type": { "type": "string" },
+        "messageAr": { "type": "string" },
+        "messageEn": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "type", "messageAr", "messageEn"]
+    }
+  },
+  "firestore": {
+    "/pharmacies/{pharmacyId}": {
+      "schema": "Pharmacy",
+      "description": "Registered pharmacies database"
+    },
+    "/customerRequests/{requestId}": {
+      "schema": "CustomerRequest",
+      "description": "Live patient requests"
+    },
+    "/pharmacyResponses/{responseId}": {
+      "schema": "PharmacyResponse",
+      "description": "Offers submitted by pharmacies to patient requests"
+    },
+    "/reservations/{reservationId}": {
+      "schema": "Reservation",
+      "description": "Pharmacy product pickup reservations"
+    },
+    "/systemEvents/{eventId}": {
+      "schema": "SystemEvent",
+      "description": "Security audit and state transition logs"
+    }
+  }
+}

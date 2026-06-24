@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Pharmacies Collection: anyone can read; admins or pharmacists can manage (write)
+    match /pharmacies/{pharmacyId} {
+      allow read: if true;
+      allow write: if true; // In pilot phase, allow unauthenticated setup for adding pharmacies
+    }
+
+    // CustomerRequests Collection: anyone can read/write to participate in requests
+    match /customerRequests/{requestId} {
+      allow read, write: if true;
+    }
+
+    // PharmacyResponses Collection: pharmacies submit offers, customers read them
+    match /pharmacyResponses/{responseId} {
+      allow read, write: if true;
+    }
+
+    // Reservations Collection: customers reserve products, pharmacies update status
+    match /reservations/{reservationId} {
+      allow read, write: if true;
+    }
+
+    // SystemEvents Collection: read and write audit events
+    match /systemEvents/{eventId} {
+      allow read, write: if true;
+    }
+  }
+}

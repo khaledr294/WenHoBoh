@@ -1,0 +1,6 @@
+{
+  "name": "Wenhoboh Pharmacy Discovery",
+  "description": "Bilingual demand-broadcast pharmacy discovery platform for Unaizah, Saudi Arabia. Instantly broadcast medicine requests and reserve available products.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
