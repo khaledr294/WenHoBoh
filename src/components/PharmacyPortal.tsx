@@ -184,15 +184,15 @@ export default function PharmacyPortal({
   const pharmacyReservation = activeReservation?.pharmacyId === activePharmacy.id ? activeReservation : null;
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl font-sans text-slate-100 space-y-6">
+    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
       
       {/* Pharmacy Switcher Header */}
-      <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+      <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div>
-          <span className="text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono font-semibold uppercase tracking-wider">
+          <span className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-500 font-mono font-semibold uppercase tracking-wider">
             {lang === 'ar' ? 'منفذ الصيدلي' : 'PHARMACIST TERMINAL'}
           </span>
-          <h2 className="text-sm font-bold text-slate-300 mt-1">
+          <h2 className="text-base font-medium font-bold text-slate-600 mt-1">
             {lang === 'ar' ? 'حدد الصيدلية للمحاكاة' : 'Switch Pharmacy Viewpoint'}
           </h2>
         </div>
@@ -200,7 +200,7 @@ export default function PharmacyPortal({
         <select
           value={selectedPharmacyId}
           onChange={(e) => setSelectedPharmacyId(e.target.value)}
-          className="bg-slate-950 border border-slate-800 text-xs text-emerald-400 font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
+          className="bg-white border border-slate-200 text-base font-medium text-emerald-400 font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
         >
           {pharmacies.map(p => (
             <option key={p.id} value={p.id}>
@@ -211,27 +211,27 @@ export default function PharmacyPortal({
       </div>
 
       {/* Selected Pharmacy Bio & License Status */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900 border border-slate-800/50 p-4 rounded-2xl gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 border border-slate-200/50 p-4 rounded-2xl gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center">
             <Building2 className="w-5 h-5 text-emerald-500" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-slate-900">
                 {lang === 'ar' ? activePharmacy.nameAr : activePharmacy.nameEn}
               </h3>
               {activePharmacy.isVerified && (
                 <BadgeCheck className="w-4 h-4 text-emerald-400 fill-emerald-950" />
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-base font-medium text-slate-500 mt-0.5">
               {lang === 'ar' ? activePharmacy.addressAr : activePharmacy.addressEn}
             </p>
           </div>
         </div>
 
-        <div className="flex gap-4 text-center sm:text-right text-xs">
+        <div className="flex gap-4 text-center sm:text-right text-base font-medium">
           <div>
             <span className="text-[9px] text-slate-500 block font-mono">RATING</span>
             <span className="font-semibold text-amber-400 flex items-center justify-center sm:justify-end gap-0.5 font-mono">
@@ -260,26 +260,26 @@ export default function PharmacyPortal({
           <div className="flex justify-between items-center border-b border-blue-900/30 pb-2">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-              <h4 className="text-sm font-bold text-blue-300">
+              <h4 className="text-base font-medium font-bold text-blue-300">
                 {lang === 'ar' ? 'حجز نشط معلق' : 'Active Reservation Request'}
               </h4>
             </div>
-            <span className="text-xs font-mono text-slate-500">
+            <span className="text-base font-medium font-mono text-slate-500">
               #{pharmacyReservation.id}
             </span>
           </div>
 
-          <div className="text-xs space-y-1.5 text-slate-300">
+          <div className="text-base font-medium space-y-1.5 text-slate-600">
             <p>
-              <strong className="text-slate-400">{lang === 'ar' ? 'المنتج المحجوز: ' : 'Reserved Item: '}</strong>
-              <span className="text-white font-semibold">{activeRequest?.productName}</span>
+              <strong className="text-slate-500">{lang === 'ar' ? 'المنتج المحجوز: ' : 'Reserved Item: '}</strong>
+              <span className="text-slate-900 font-semibold">{activeRequest?.productName}</span>
             </p>
             <p>
-              <strong className="text-slate-400">{lang === 'ar' ? 'العميل: ' : 'Customer: '}</strong>
+              <strong className="text-slate-500">{lang === 'ar' ? 'العميل: ' : 'Customer: '}</strong>
               <span className="font-mono">{pharmacyReservation.customerPhone}</span>
             </p>
             <p>
-              <strong className="text-slate-400">{lang === 'ar' ? 'الموقع: ' : 'Distance: '}</strong>
+              <strong className="text-slate-500">{lang === 'ar' ? 'الموقع: ' : 'Distance: '}</strong>
               <span>بعيد بمقدار {getPharmacyDistance(activePharmacy.id)} كم</span>
             </p>
           </div>
@@ -288,13 +288,13 @@ export default function PharmacyPortal({
             <div className="flex gap-2 pt-1.5">
               <button
                 onClick={() => handleResolveReservation('completed')}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-xl text-xs transition"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-xl text-base font-medium transition"
               >
                 {lang === 'ar' ? 'تسليم الدواء بنجاح (مكتمل)' : 'Confirm Complete Pickup'}
               </button>
               <button
                 onClick={() => handleResolveReservation('no_show')}
-                className="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-850 py-2 px-3 rounded-xl text-xs transition"
+                className="bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-850 py-2 px-3 rounded-xl text-base font-medium transition"
               >
                 {lang === 'ar' ? 'لم يحضر العميل' : 'Mark No-Show'}
               </button>
@@ -302,7 +302,7 @@ export default function PharmacyPortal({
           )}
 
           {pharmacyReservation.status !== 'active' && (
-            <div className="text-center p-2 bg-slate-900/80 rounded-xl text-xs font-semibold text-slate-400">
+            <div className="text-center p-2 bg-slate-50/80 rounded-xl text-base font-medium font-semibold text-slate-500">
               {pharmacyReservation.status === 'completed' && (lang === 'ar' ? '✓ تم تسليم الطلب واكتمل بنجاح!' : '✓ Reservation Completed Successfully!')}
               {pharmacyReservation.status === 'no_show' && (lang === 'ar' ? '✗ تم الإبلاغ عن عدم حضور العميل' : '✗ Marked as No-Show')}
             </div>
@@ -313,13 +313,13 @@ export default function PharmacyPortal({
       {/* Broadcast Inbox / Active Alerts */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-2">
+          <h3 className="text-base font-medium font-semibold uppercase tracking-wider text-slate-500 font-mono flex items-center gap-2">
             <Bell className="w-4 h-4 text-emerald-500" />
             {lang === 'ar' ? 'طلبات المرضى النشطة بالقرب منك' : 'INCOMING DEMAND BROADCASTS'}
           </h3>
           <button 
             onClick={playAlertSound}
-            className="p-1 hover:bg-slate-900 rounded-lg text-slate-500 hover:text-white transition"
+            className="p-1 hover:bg-slate-50 rounded-lg text-slate-500 hover:text-slate-900 transition"
             title="Test sound alert"
           >
             <Volume2 className="w-4 h-4" />
@@ -327,43 +327,43 @@ export default function PharmacyPortal({
         </div>
 
         {!activeRequest ? (
-          <div className="border border-slate-850 rounded-2xl p-8 text-center space-y-2 bg-slate-900/10">
+          <div className="border border-slate-850 rounded-2xl p-8 text-center space-y-2 bg-slate-50/10">
             <BadgeCheck className="w-10 h-10 text-slate-700 mx-auto mb-1" />
-            <p className="text-sm text-slate-400 font-semibold">
+            <p className="text-base font-medium text-slate-500 font-semibold">
               {lang === 'ar' ? 'لا توجد طلبات جارية حالياً' : 'No Active Broadcasts Nearby'}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-base font-medium text-slate-500">
               {lang === 'ar' 
                 ? 'استخدم بوابة العميل لبث طلب دواء وسترى إشعاراً يرن هنا فوراً!' 
                 : 'Broadcast a search from the Customer tab to trigger an active alert here!'}
             </p>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
             
             {/* Header of Request */}
-            <div className="flex justify-between items-start border-b border-slate-800/60 pb-3">
+            <div className="flex justify-between items-start border-b border-slate-200/60 pb-3">
               <div>
                 <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-900/50 rounded-full text-[9px] font-bold tracking-wide uppercase font-mono animate-pulse">
                   {lang === 'ar' ? 'طلب فوري جديد دقيقة واحدة' : 'NEW BROADCAST ALERT'}
                 </span>
-                <h4 className="text-base font-bold text-white mt-1.5">
+                <h4 className="text-base font-bold text-slate-900 mt-1.5">
                   {activeRequest.productName}
                 </h4>
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-500 mt-1">
                   📍 العميل يقع على بعد {getPharmacyDistance(activePharmacy.id)} كم من موقعك
                 </p>
               </div>
 
               {/* Category indicator */}
-              <span className="text-[11px] font-semibold text-slate-300 font-mono bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">
+              <span className="text-[11px] font-semibold text-slate-600 font-mono bg-white px-2.5 py-1 rounded-md border border-slate-200">
                 {activeRequest.category.toUpperCase()}
               </span>
             </div>
 
             {/* Notes or prescription attached */}
             {activeRequest.notes && (
-              <div className="text-xs text-slate-400 bg-slate-950/40 p-3 rounded-xl border border-slate-800/40">
+              <div className="text-base font-medium text-slate-500 bg-white/40 p-3 rounded-xl border border-slate-200/40">
                 <span className="font-semibold block text-[10px] text-slate-500 mb-1">
                   {lang === 'ar' ? 'ملاحظة العميل:' : 'CUSTOMER NOTE:'}
                 </span>
@@ -372,14 +372,14 @@ export default function PharmacyPortal({
             )}
 
             {activeRequest.prescriptionImage && (
-              <div className="flex items-center justify-between bg-slate-950 p-3 border border-slate-800/60 rounded-xl">
-                <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center justify-between bg-white p-3 border border-slate-200/60 rounded-xl">
+                <div className="flex items-center gap-2 text-base font-medium">
                   <FileImage className="w-4 h-4 text-emerald-400" />
                   <span>{lang === 'ar' ? 'صورة الوصفة الطبية مرفقة' : 'Prescription Image Attached'}</span>
                 </div>
                 <button
                   onClick={() => setViewPrescriptionModal(true)}
-                  className="bg-slate-900 hover:bg-slate-800 text-xs px-2.5 py-1.5 rounded-lg text-slate-300 flex items-center gap-1 border border-slate-800 transition"
+                  className="bg-slate-50 hover:bg-slate-100 text-base font-medium px-2.5 py-1.5 rounded-lg text-slate-600 flex items-center gap-1 border border-slate-200 transition"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   {lang === 'ar' ? 'عرض الوصفة' : 'View Image'}
@@ -400,9 +400,9 @@ export default function PharmacyPortal({
             )}
 
             {/* Answer Control Pad */}
-            <div className="border-t border-slate-800/60 pt-4">
+            <div className="border-t border-slate-200/60 pt-4">
               {hasResponded ? (
-                <div className="p-4 bg-slate-950 text-center rounded-xl border border-slate-800 text-xs font-semibold text-emerald-400 space-y-1">
+                <div className="p-4 bg-white text-center rounded-xl border border-slate-200 text-base font-medium font-semibold text-emerald-400 space-y-1">
                   <p>✓ {lang === 'ar' ? 'تم إرسال رد صيدليتك بنجاح للعميل!' : '✓ Your reply has been broadcasted to the customer!'}</p>
                   <p className="text-[10px] text-slate-500 font-mono">
                     Status: {currentResponse?.status.toUpperCase()} 
@@ -412,7 +412,7 @@ export default function PharmacyPortal({
               ) : (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-slate-300">
+                    <span className="text-base font-medium font-semibold text-slate-600">
                       {lang === 'ar' ? 'حدد توفر المنتج:' : 'Quotation Status:'}
                     </span>
                   </div>
@@ -425,7 +425,7 @@ export default function PharmacyPortal({
                           // Quick available reply
                           handleSendResponse('available');
                         }}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'متوفر ✓' : 'Available ✓'}
                       </button>
@@ -436,7 +436,7 @@ export default function PharmacyPortal({
                           // Out of stock
                           handleSendResponse('not_available');
                         }}
-                        className="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-xs transition"
+                        className="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'غير متوفر ✗' : 'Out of Stock ✗'}
                       </button>
@@ -444,22 +444,22 @@ export default function PharmacyPortal({
                       <button
                         type="button"
                         onClick={() => setShowAlternativeForm(true)}
-                        className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-xs transition"
+                        className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'توفير بديل 🔄' : 'Offer Alt 🔄'}
                       </button>
                     </div>
                   ) : (
                     /* Alternative product form */
-                    <div className="bg-slate-950 p-4 border border-slate-850 rounded-2xl space-y-3">
+                    <div className="bg-white p-4 border border-slate-850 rounded-2xl space-y-3">
                       <div className="flex justify-between items-center border-b border-slate-900 pb-2 mb-1">
-                        <span className="text-xs font-bold text-amber-400">
+                        <span className="text-base font-medium font-bold text-amber-400">
                           {lang === 'ar' ? 'اقتراح منتج بديل متوفر' : 'Propose Alternative medicine'}
                         </span>
                         <button
                           type="button"
                           onClick={() => setShowAlternativeForm(false)}
-                          className="text-[10px] text-slate-500 hover:text-white"
+                          className="text-[10px] text-slate-500 hover:text-slate-900"
                         >
                           {lang === 'ar' ? 'إلغاء' : 'Cancel'}
                         </button>
@@ -467,7 +467,7 @@ export default function PharmacyPortal({
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                             {lang === 'ar' ? 'اسم المنتج البديل' : 'Alternative Product Name'}
                           </label>
                           <input
@@ -476,12 +476,12 @@ export default function PharmacyPortal({
                             placeholder={lang === 'ar' ? 'مثال: بنادول أدفانس' : 'e.g., Panadol Advance'}
                             value={alternativeName}
                             onChange={e => setAlternativeName(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-base font-medium focus:outline-none"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                             {lang === 'ar' ? 'السعر الاختياري (SAR)' : 'Price (SAR)'}
                           </label>
                           <input
@@ -489,13 +489,13 @@ export default function PharmacyPortal({
                             placeholder="e.g. 15"
                             value={priceInput}
                             onChange={e => setPriceInput(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-base font-medium focus:outline-none"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                        <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                           {lang === 'ar' ? 'ملاحظة بديل (مثل: نفس الفعالية وبسعر أقل)' : 'Note for Customer'}
                         </label>
                         <input
@@ -503,7 +503,7 @@ export default function PharmacyPortal({
                           placeholder={lang === 'ar' ? 'مثال: علبة ٢٠ حبة، نفس المادة العلمية' : 'e.g. Same active ingredient'}
                           value={notesInput}
                           onChange={e => setNotesInput(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-base font-medium focus:outline-none"
                         />
                       </div>
 
@@ -511,7 +511,7 @@ export default function PharmacyPortal({
                         type="button"
                         onClick={() => handleSendResponse('alternative')}
                         disabled={!alternativeName}
-                        className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-800 text-white font-bold py-2 rounded-xl text-xs transition"
+                        className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-100 text-white font-bold py-2 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'إرسال عرض البديل للعميل' : 'Send Alternative Offer'}
                       </button>
@@ -527,33 +527,33 @@ export default function PharmacyPortal({
       {/* Prescription View Modal */}
       {viewPrescriptionModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-white">
+          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-base font-medium font-bold text-slate-900">
                 {lang === 'ar' ? 'وصفة طبية معتمدة' : 'Official Physician Prescription'}
               </h3>
               <button
                 onClick={() => setViewPrescriptionModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-500 hover:text-slate-900"
               >
                 ✕
               </button>
             </div>
             
-            <div className="rounded-xl overflow-hidden bg-white border border-slate-800 p-2 text-center relative">
+            <div className="rounded-xl overflow-hidden bg-white border border-slate-200 p-2 text-center relative">
               <img
                 src={activeRequest?.prescriptionImage || ''}
                 alt="Rx prescription"
                 referrerPolicy="no-referrer"
                 className="w-full h-64 object-contain"
               />
-              <div className="absolute top-2 right-2 bg-slate-950 text-[9px] text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20">
+              <div className="absolute top-2 right-2 bg-white text-[9px] text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20">
                 SIMULATED Rx
               </div>
             </div>
 
             <div className="text-center">
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 {lang === 'ar' 
                   ? 'يرجى مراجعة الاسم العلمي والجرعات المعتمدة وتطابقها مع المستودع.' 
                   : 'Please check scientific ingredient name & dosages to match pharmacy stock.'}
@@ -562,7 +562,7 @@ export default function PharmacyPortal({
 
             <button
               onClick={() => setViewPrescriptionModal(false)}
-              className="w-full bg-slate-950 hover:bg-slate-850 text-slate-300 border border-slate-800 text-xs py-2 rounded-xl transition font-semibold"
+              className="w-full bg-white hover:bg-slate-850 text-slate-600 border border-slate-200 text-base font-medium py-2 rounded-xl transition font-semibold"
             >
               {lang === 'ar' ? 'تمت المراجعة والتحقق' : 'Close and Verify'}
             </button>

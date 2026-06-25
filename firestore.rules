@@ -7,6 +7,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Admins Collection
+    match /admins/{adminId} {
+      allow read: if request.auth != null && request.auth.uid == adminId;
+      allow write: if request.auth != null && request.auth.uid == adminId;
+    }
+
     // Pharmacies Collection
     match /pharmacies/{pharmacyId} {
       allow read: if true;

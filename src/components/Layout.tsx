@@ -27,26 +27,26 @@ export default function Layout({ lang, setLang }: any) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
       {/* Platform Upper Top Bar */}
-      <header className="bg-slate-950 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md px-4 py-3 md:px-6">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 px-4 py-3 md:px-6 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
           
           {/* Logo & Slogan */}
-          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={handleLogoClick}>
-            <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-md shadow-emerald-950">
+          <div className="flex items-center gap-3 cursor-pointer select-none group" onClick={handleLogoClick}>
+            <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white text-lg shadow-md shadow-emerald-600/20 group-hover:bg-emerald-500 transition-colors">
               و
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-black text-white tracking-tight font-display">
+                <h1 className="text-xl font-black text-slate-800 tracking-tight font-display group-hover:text-emerald-700 transition-colors">
                   {lang === 'ar' ? 'وينهوبه' : 'WENHOBOH'}
                 </h1>
-                <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-900/60 px-1.5 py-0.5 rounded font-mono font-bold tracking-wider">
+                <span className="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-1.5 py-0.5 rounded font-mono font-bold tracking-wider">
                   {lang === 'ar' ? 'عنيزة' : 'Unaizah'}
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 block -mt-0.5">
+              <span className="text-[11px] text-slate-500 block -mt-0.5 font-medium">
                 {lang === 'ar' ? 'اكتشاف وتأكيد توفر دواءك في دقائق معدودة' : 'Medication demand-broadcast & reservation engine'}
               </span>
             </div>
@@ -58,9 +58,9 @@ export default function Layout({ lang, setLang }: any) {
             {user && (
               <button
                 onClick={handleLogout}
-                className="bg-red-950/70 hover:bg-red-900 border border-red-800/60 px-3 py-1.5 rounded-xl text-xs font-bold text-red-200 transition duration-150 flex items-center gap-1.5 cursor-pointer"
+                className="bg-red-50 hover:bg-red-100 border-2 border-red-100 px-3 py-1.5 rounded-xl text-xs font-bold text-red-600 transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm"
               >
-                <LogOut className="w-3.5 h-3.5 text-red-400" />
+                <LogOut className="w-4 h-4 text-red-600" />
                 <span>{lang === 'ar' ? 'تسجيل الخروج' : 'Logout'}</span>
               </button>
             )}
@@ -68,9 +68,9 @@ export default function Layout({ lang, setLang }: any) {
             {/* Language switch */}
             <button
               onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-              className="bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 transition duration-150 flex items-center gap-1.5 cursor-pointer"
+              className="bg-slate-100 hover:bg-slate-200 border-2 border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
-              <Globe className="w-3.5 h-3.5 text-emerald-500" />
+              <Globe className="w-4 h-4 text-emerald-600" />
               <span>{lang === 'ar' ? 'English' : 'العربية'}</span>
             </button>
           </div>

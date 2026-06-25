@@ -283,15 +283,15 @@ export default function InteractiveMap({
   const pPatient = mapCoordsToPercent(customerCoords.lat, customerCoords.lng);
 
   return (
-    <div className="relative w-full h-[400px] bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl font-sans flex flex-col">
+    <div className="relative w-full h-[400px] bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl font-sans flex flex-col">
       
       {/* Map Control HUD Header */}
-      <div className="bg-slate-950 border-b border-slate-800/80 p-3 flex flex-wrap justify-between items-center gap-2 z-20">
+      <div className="bg-white border-b border-slate-200/80 p-3 flex flex-wrap justify-between items-center gap-2 z-20">
         
         {/* Title Badge */}
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
-          <span className="text-xs font-bold text-slate-100 font-mono tracking-tight flex items-center gap-1.5">
+          <span className="text-xs font-bold text-slate-900 font-mono tracking-tight flex items-center gap-1.5">
             <MapIcon className="w-3.5 h-3.5 text-emerald-400" />
             {useLiveMap 
               ? (lang === 'ar' ? 'خرائط جوجل المباشرة' : 'Live Google Maps')
@@ -324,7 +324,7 @@ export default function InteractiveMap({
               }
               setUseLiveMap(!useLiveMap);
             }}
-            className="bg-slate-900 hover:bg-slate-800 border border-slate-800 active:scale-95 transition text-[10px] font-bold text-slate-300 px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1"
+            className="bg-slate-50 hover:bg-slate-100 border border-slate-200 active:scale-95 transition text-[10px] font-bold text-slate-700 px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1"
           >
             {useLiveMap 
               ? (lang === 'ar' ? '🗺️ الخريطة الرقمية' : '🗺️ Switch to Vector Map')
@@ -384,10 +384,10 @@ export default function InteractiveMap({
               >
                 <div className="flex flex-col items-center select-none" style={{ transform: 'translate(0, -10px)' }}>
                   <div className="bg-red-500 p-2 rounded-full border-2 border-white shadow-xl scale-110 cursor-move relative flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-white" />
+                    <MapPin className="w-4 h-4 text-slate-900" />
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping"></span>
                   </div>
-                  <div className="bg-slate-950/95 text-[9px] font-bold text-white px-2 py-0.5 rounded-lg border border-slate-800 mt-1 whitespace-nowrap">
+                  <div className="bg-white/95 text-[9px] font-bold text-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 mt-1 whitespace-nowrap">
                     {lang === 'ar' ? 'موقعك الحالي (اسحب)' : 'Your Location (Drag)'}
                   </div>
                 </div>
@@ -412,10 +412,10 @@ export default function InteractiveMap({
                     onClick={() => onSelectPharmacy && onSelectPharmacy(pharmacy.id)}
                   >
                     <div className="flex flex-col items-center cursor-pointer select-none">
-                      <div className={`p-1.5 rounded-xl border-2 ${markerColor} text-white shadow-lg transition-all`}>
+                      <div className={`p-1.5 rounded-xl border-2 ${markerColor} text-slate-900 shadow-lg transition-all`}>
                         <Building2 className="w-3.5 h-3.5" />
                       </div>
-                      <div className="bg-slate-950/95 text-[9px] font-bold text-slate-100 px-2 py-0.5 rounded-lg border border-slate-800 mt-0.5 whitespace-nowrap">
+                      <div className="bg-white/95 text-[9px] font-bold text-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 mt-0.5 whitespace-nowrap">
                         {lang === 'ar' ? pharmacy.nameAr : pharmacy.nameEn}
                       </div>
                     </div>
@@ -438,7 +438,7 @@ export default function InteractiveMap({
         ) : (
           /* High-Fidelity local Simulated Vector Map of Unaizah */
           <div 
-            className="w-full h-full relative cursor-crosshair select-none bg-slate-950/95 flex flex-col justify-between"
+            className="w-full h-full relative cursor-crosshair select-none bg-white/95 flex flex-col justify-between"
             onPointerDown={handleVectorMapPointerDown}
           >
             
@@ -554,10 +554,10 @@ export default function InteractiveMap({
               }}
             >
               <div className="bg-red-500 p-2 rounded-full border border-white shadow-xl scale-110 relative flex items-center justify-center animate-bounce" style={{ animationDuration: '3s' }}>
-                <MapPin className="w-4 h-4 text-white" />
+                <MapPin className="w-4 h-4 text-slate-900" />
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping"></span>
               </div>
-              <div className="bg-slate-950/95 text-[9px] font-bold text-white px-2 py-0.5 rounded-lg border border-slate-800 mt-1 whitespace-nowrap">
+              <div className="bg-white/95 text-[9px] font-bold text-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 mt-1 whitespace-nowrap">
                 {lang === 'ar' ? 'موقعك (اسحب الدبوس)' : 'You (Drag map)'}
               </div>
             </div>
@@ -590,10 +590,10 @@ export default function InteractiveMap({
                     if (onSelectPharmacy) onSelectPharmacy(pharmacy.id);
                   }}
                 >
-                  <div className={`p-1.5 rounded-xl border-2 ${markerColor} text-white shadow-lg transition-all hover:scale-115`}>
+                  <div className={`p-1.5 rounded-xl border-2 ${markerColor} text-slate-900 shadow-lg transition-all hover:scale-115`}>
                     <Building2 className="w-3 h-3" />
                   </div>
-                  <div className="bg-slate-950/95 text-[9px] font-bold text-slate-200 px-1.5 py-0.5 rounded border border-slate-800/80 mt-0.5 whitespace-nowrap shadow">
+                  <div className="bg-white/95 text-[9px] font-bold text-slate-800 px-1.5 py-0.5 rounded border border-slate-200/80 mt-0.5 whitespace-nowrap shadow">
                     {lang === 'ar' ? pharmacy.nameAr : pharmacy.nameEn}
                   </div>
                 </div>
@@ -601,7 +601,7 @@ export default function InteractiveMap({
             })}
 
             {/* Drag instruction overlay footer inside Map */}
-            <div className="absolute top-2 left-2 bg-slate-950/90 border border-slate-800 px-2.5 py-1 rounded-xl text-[9px] text-slate-300 font-semibold pointer-events-none">
+            <div className="absolute top-2 left-2 bg-white/90 border border-slate-200 px-2.5 py-1 rounded-xl text-[9px] text-slate-700 font-semibold pointer-events-none">
               💡 {lang === 'ar' ? 'انقر على أي مكان بالخريطة لنقل موقعك الجغرافي وبث الطلب!' : 'Click or drag anywhere on map to update your broadcast coordinates!'}
             </div>
 
@@ -612,7 +612,7 @@ export default function InteractiveMap({
 
       {/* Real-time Routing HUD Footer Overlay */}
       {activeReservation && (
-        <div className="absolute bottom-3 left-3 right-3 bg-slate-950/95 backdrop-blur-md border border-blue-500/50 p-2.5 rounded-2xl shadow-2xl z-20 flex items-center justify-between text-right font-sans">
+        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md border border-blue-500/50 p-2.5 rounded-2xl shadow-2xl z-20 flex items-center justify-between text-right font-sans">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-blue-950 rounded-lg flex items-center justify-center border border-blue-800/40">
               <Navigation className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
@@ -621,7 +621,7 @@ export default function InteractiveMap({
               <span className="text-[8px] text-slate-500 uppercase font-mono block leading-none mb-0.5">
                 {lang === 'ar' ? 'الاتجاه والمسار الجغرافي الفعلي' : 'ACTUAL GEOGRAPHICAL ROUTING'}
               </span>
-              <span className="text-[10px] md:text-[11px] font-bold text-white block">
+              <span className="text-[10px] md:text-[11px] font-bold text-slate-900 block">
                 {useLiveMap && liveRouteInfo ? (
                   lang === 'ar' 
                     ? `صيدلية: ${reservedPharmacy?.nameAr} • المسافة: ${liveRouteInfo.distanceText} (${liveRouteInfo.durationText})` 
@@ -638,7 +638,7 @@ export default function InteractiveMap({
             href={`https://www.google.com/maps/dir/?api=1&origin=${customerCoords.lat},${customerCoords.lng}&destination=${reservedPharmacy?.latitude},${reservedPharmacy?.longitude}&travelmode=driving`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[9px] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
+            className="bg-blue-600 hover:bg-blue-500 text-slate-900 font-bold text-[9px] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
           >
             {lang === 'ar' ? 'افتح الاتجاهات' : 'Open Directions'}
           </a>
@@ -647,17 +647,17 @@ export default function InteractiveMap({
 
       {/* Quick Legend indicators */}
       <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-0.5 pointer-events-none text-right">
-        <div className="bg-slate-950/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-800 flex items-center gap-1.5 shadow">
+        <div className="bg-white/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1.5 shadow">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-          <span className="text-[8px] text-slate-300">{lang === 'ar' ? 'موقعك (انقر لنقله)' : 'You (Click to move)'}</span>
+          <span className="text-[8px] text-slate-700">{lang === 'ar' ? 'موقعك (انقر لنقله)' : 'You (Click to move)'}</span>
         </div>
-        <div className="bg-slate-950/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-800 flex items-center gap-1.5 shadow">
+        <div className="bg-white/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1.5 shadow">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span className="text-[8px] text-slate-300">{lang === 'ar' ? 'صيدلية' : 'Pharmacy'}</span>
+          <span className="text-[8px] text-slate-700">{lang === 'ar' ? 'صيدلية' : 'Pharmacy'}</span>
         </div>
-        <div className="bg-slate-950/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-800 flex items-center gap-1.5 shadow">
+        <div className="bg-white/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1.5 shadow">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-          <span className="text-[8px] text-slate-300">{lang === 'ar' ? 'محجوز' : 'Reserved'}</span>
+          <span className="text-[8px] text-slate-700">{lang === 'ar' ? 'محجوز' : 'Reserved'}</span>
         </div>
       </div>
 

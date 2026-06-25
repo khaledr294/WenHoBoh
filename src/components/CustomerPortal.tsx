@@ -310,31 +310,31 @@ export default function CustomerPortal({
   if (activeReservation) {
     const reservationPharmacy = pharmacies.find(p => p.id === activeReservation.pharmacyId);
     return (
-      <div className="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl font-sans text-slate-100 space-y-6">
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
         {/* Ticket Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-5 gap-3">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-5 gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2 py-0.5 bg-blue-950 text-blue-400 border border-blue-800/50 rounded-full text-[10px] font-semibold tracking-wide uppercase font-mono">
                 {lang === 'ar' ? 'حجز مؤكد مسبقاً' : 'CONFIRMED RESERVATION'}
               </span>
-              <span className="text-xs text-slate-500 font-mono">
+              <span className="text-base font-medium text-slate-500 font-mono">
                 #{activeReservation.id}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
               {lang === 'ar' ? 'تذكرة استلام الدواء' : 'Medicine Pickup Ticket'}
             </h2>
           </div>
 
           {/* Countdown Clock */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-2.5 flex items-center gap-3 shadow-md">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 flex items-center gap-3 shadow-md">
             <Clock className="w-5 h-5 text-amber-500 animate-pulse" />
             <div>
-              <span className="text-[9px] text-slate-400 block font-semibold uppercase tracking-wider">
+              <span className="text-[9px] text-slate-500 block font-semibold uppercase tracking-wider">
                 {lang === 'ar' ? 'الوقت المتبقي للاستلام' : 'TIMER REMAINING'}
               </span>
-              <span className="text-lg font-bold font-mono text-amber-400 tracking-wider">
+              <span className="text-3xl font-bold font-mono text-amber-400 tracking-wider">
                 {formatTime(reservationTimeLeft)}
               </span>
             </div>
@@ -345,11 +345,11 @@ export default function CustomerPortal({
         {activeReservation.status === 'active' && (
           <div className="p-4 bg-emerald-950/45 border border-emerald-800/40 rounded-2xl flex gap-3">
             <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
+            <div className="text-base font-medium">
               <p className="font-semibold text-emerald-200">
                 {lang === 'ar' ? 'تم حجز الدواء بنجاح!' : 'Product Reserved Successfully!'}
               </p>
-              <p className="text-slate-300 text-xs mt-1">
+              <p className="text-slate-600 text-base font-medium mt-1">
                 {lang === 'ar' 
                   ? 'قم بزيارة الصيدلية خلال ٣٠ دقيقة المحددة. أظهر رقم الحجز للصيدلي لاستلام الدواء.' 
                   : 'Please visit the pharmacy within 30 minutes. Present this ticket to the pharmacist.'}
@@ -361,11 +361,11 @@ export default function CustomerPortal({
         {activeReservation.status === 'completed' && (
           <div className="p-4 bg-blue-950/45 border border-blue-800/40 rounded-2xl flex gap-3">
             <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
+            <div className="text-base font-medium">
               <p className="font-semibold text-blue-200">
                 {lang === 'ar' ? 'تم الاستلام بنجاح!' : 'Successfully Picked Up!'}
               </p>
-              <p className="text-slate-300 text-xs mt-1">
+              <p className="text-slate-600 text-base font-medium mt-1">
                 {lang === 'ar' 
                   ? 'شكراً لك على استخدام منصة وينهوبه لخدمة اكتشاف الأدوية في عنيزة.' 
                   : 'Thank you for using Wenhoboh for pharmacy discovery in Unaizah.'}
@@ -377,11 +377,11 @@ export default function CustomerPortal({
         {activeReservation.status === 'expired' && (
           <div className="p-4 bg-amber-950/45 border border-amber-800/40 rounded-2xl flex gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
+            <div className="text-base font-medium">
               <p className="font-semibold text-amber-200">
                 {lang === 'ar' ? 'انتهت صلاحية الحجز' : 'Reservation Expired'}
               </p>
-              <p className="text-slate-300 text-xs mt-1">
+              <p className="text-slate-600 text-base font-medium mt-1">
                 {lang === 'ar' 
                   ? 'مرت ٣٠ دقيقة دون استلام، تم الإفراج عن المنتج للصيدلية.' 
                   : '30 minutes passed without pickup. The reserved item has been released.'}
@@ -393,11 +393,11 @@ export default function CustomerPortal({
         {activeReservation.status.startsWith('cancelled') && (
           <div className="p-4 bg-red-950/45 border border-red-800/40 rounded-2xl flex gap-3">
             <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
+            <div className="text-base font-medium">
               <p className="font-semibold text-red-200">
                 {lang === 'ar' ? 'تم إلغاء الحجز' : 'Reservation Cancelled'}
               </p>
-              <p className="text-slate-300 text-xs mt-1">
+              <p className="text-slate-600 text-base font-medium mt-1">
                 {lang === 'ar' 
                   ? 'تم إلغاء هذا الحجز. يمكنك إجراء بث جديد إذا لزم الأمر.' 
                   : 'This reservation has been cancelled. You can make a new broadcast if needed.'}
@@ -407,20 +407,20 @@ export default function CustomerPortal({
         )}
 
         {/* Pharmacy Details Panel */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-slate-900">
                 {lang === 'ar' ? reservationPharmacy?.nameAr : reservationPharmacy?.nameEn}
               </h3>
-              <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+              <p className="text-base font-medium text-slate-500 flex items-center gap-1 mt-1">
                 <MapPin className="w-3.5 h-3.5 text-slate-500" />
                 {lang === 'ar' ? reservationPharmacy?.addressAr : reservationPharmacy?.addressEn}
               </p>
             </div>
             
             <div className="text-right">
-              <span className="inline-flex items-center gap-1 text-xs text-amber-400 bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-800/20 font-mono">
+              <span className="inline-flex items-center gap-1 text-base font-medium text-amber-400 bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-800/20 font-mono">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                 {getPharmacyRating(activeReservation.pharmacyId)}
               </span>
@@ -430,7 +430,7 @@ export default function CustomerPortal({
             </div>
           </div>
 
-          <div className="border-t border-slate-800/60 pt-3 flex flex-wrap gap-4 text-xs justify-between">
+          <div className="border-t border-slate-200/60 pt-3 flex flex-wrap gap-4 text-base font-medium justify-between">
             <div>
               <span className="text-slate-500 uppercase tracking-wide block text-[9px] font-mono mb-0.5">
                 {lang === 'ar' ? 'المنتج المحجوز' : 'RESERVED PRODUCT'}
@@ -453,14 +453,14 @@ export default function CustomerPortal({
 
           {/* Real-time Google Maps Navigation Widget */}
           {reservationPharmacy && (
-            <div className="border-t border-slate-800/60 pt-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-950/40 p-3 rounded-xl border border-blue-950/50">
+            <div className="border-t border-slate-200/60 pt-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/40 p-3 rounded-xl border border-blue-950/50">
               <div className="flex items-center gap-2.5">
                 <Navigation className="w-4 h-4 text-blue-400 animate-pulse flex-shrink-0" />
                 <div>
-                  <span className="font-semibold text-xs text-slate-200 block">
+                  <span className="font-semibold text-base font-medium text-slate-200 block">
                     {lang === 'ar' ? 'اتجاهات الملاحة والمسار الحي' : 'Live Navigation & Driving Route'}
                   </span>
-                  <span className="text-[10px] text-slate-400 block">
+                  <span className="text-[10px] text-slate-500 block">
                     {lang === 'ar' ? 'مخطط الملاحة المباشر جاهز لتوجيهك نحو الصيدلية' : 'Real-time driving path mapping active for your trip'}
                   </span>
                 </div>
@@ -483,7 +483,7 @@ export default function CustomerPortal({
             <>
               <button
                 onClick={handleCompletePickup}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-emerald-950/20 active:scale-98 transition flex items-center justify-center gap-2 text-sm"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-emerald-950/20 active:scale-98 transition flex items-center justify-center gap-2 text-base font-medium"
               >
                 <CheckCircle className="w-4 h-4" />
                 {lang === 'ar' ? 'تأكيد الاستلام من الصيدلي' : 'Confirm Pickup at Pharmacy'}
@@ -491,7 +491,7 @@ export default function CustomerPortal({
 
               <button
                 onClick={() => handleCancelReservation(lang === 'ar' ? 'وجدت بديل آخر' : 'Found alternative')}
-                className="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-semibold py-3 px-4 rounded-xl text-xs transition"
+                className="bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 font-semibold py-3 px-4 rounded-xl text-base font-medium transition"
               >
                 {lang === 'ar' ? 'إلغاء الحجز' : 'Cancel Hold'}
               </button>
@@ -504,7 +504,7 @@ export default function CustomerPortal({
                 setActiveReservation(null);
                 setActiveRequest(null);
               }}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-semibold py-3 rounded-xl transition text-sm"
+              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-200 border border-slate-200 font-semibold py-3 rounded-xl transition text-base font-medium"
             >
               {lang === 'ar' ? 'الرجوع للرئيسية وإجراء بحث جديد' : 'Back to Dashboard & Search Again'}
             </button>
@@ -514,15 +514,15 @@ export default function CustomerPortal({
         {/* Rating Modal */}
         {showRatingModal && (
           <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
               <div className="text-center">
                 <div className="w-12 h-12 bg-amber-950 border border-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
                 </div>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-3xl font-bold text-slate-900">
                   {lang === 'ar' ? 'تقييم تجربة الاستلام' : 'Rate Your Experience'}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-base font-medium text-slate-500 mt-1">
                   {lang === 'ar' 
                     ? 'يساعد تقييمك في تحسين جودة صيدليات شبكة وينهوبه بمحافظة عنيزة' 
                     : 'Your rating builds reliability for pharmacy network in Unaizah'}
@@ -551,13 +551,13 @@ export default function CustomerPortal({
                     rows={3}
                     value={reviewText}
                     onChange={e => setReviewText(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-xs text-slate-100 focus:outline-none placeholder-slate-600"
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl p-3 text-base font-medium text-slate-900 focus:outline-none placeholder-slate-600"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl py-2.5 text-xs transition"
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl py-2.5 text-base font-medium transition"
                 >
                   {lang === 'ar' ? 'إرسال التقييم' : 'Submit Review'}
                 </button>
@@ -570,14 +570,14 @@ export default function CustomerPortal({
   }
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl font-sans text-slate-100 space-y-6">
+    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
       {/* Customer Header */}
-      <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+      <div className="flex justify-between items-center border-b border-slate-200 pb-4">
         <div>
-          <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-slate-400 font-mono">
+          <span className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-slate-500 font-mono">
             {lang === 'ar' ? 'مرحبًا بك' : 'WELCOME'}
           </span>
-          <h2 className="text-xl font-bold text-white tracking-tight mt-1">
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight mt-1">
             {user.name}
           </h2>
         </div>
@@ -586,9 +586,9 @@ export default function CustomerPortal({
       {/* Main Form (Hidden if there's an active request awaiting results) */}
       {!activeRequest ? (
         <form onSubmit={handleBroadcast} className="space-y-4">
-          <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+          <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-300">
+              <span className="text-base font-medium font-bold text-slate-600">
                 {lang === 'ar' ? '💡 تعبئة سريعة للتجربة' : '💡 Demo Quick-Fill Presets'}
               </span>
             </div>
@@ -598,7 +598,7 @@ export default function CustomerPortal({
                   key={idx}
                   type="button"
                   onClick={() => handleSelectPreset(preset)}
-                  className="text-[10px] md:text-xs bg-slate-950 hover:bg-slate-850 hover:border-emerald-500/50 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg transition active:scale-95"
+                  className="text-[10px] md:text-base font-medium bg-white hover:bg-slate-850 hover:border-emerald-500/50 border border-slate-200 text-slate-600 px-2.5 py-1.5 rounded-lg transition active:scale-95"
                 >
                   {lang === 'ar' ? preset.nameAr : preset.nameEn}
                 </button>
@@ -607,7 +607,7 @@ export default function CustomerPortal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-mono">
+            <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
               {lang === 'ar' ? 'اسم الدواء أو المنتج المطلوب' : 'Product Name / Description'}
             </label>
             <div className="relative">
@@ -618,20 +618,20 @@ export default function CustomerPortal({
                 required
                 value={productName}
                 onChange={e => setProductName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-11 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition"
+                className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl pl-11 pr-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 font-mono">
+              <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-1.5 font-mono">
                 {lang === 'ar' ? 'الفئة الطبية' : 'Category'}
               </label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as ProductCategory)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition"
               >
                 <option value="otc">{lang === 'ar' ? 'لا وصفة (OTC)' : 'Over the Counter'}</option>
                 <option value="rx">{lang === 'ar' ? 'بوصفة طبيب (Rx)' : 'Prescription'}</option>
@@ -644,13 +644,13 @@ export default function CustomerPortal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 font-mono">
+              <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-1.5 font-mono">
                 {lang === 'ar' ? 'نطاق البحث الجغرافي' : 'Search Radius'}
               </label>
               <select
                 value={radiusKm}
                 onChange={e => setRadiusKm(Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition font-mono"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition font-mono"
               >
                 <option value={3}>{lang === 'ar' ? '٣ كم (محيطك المباشر)' : '3 km (Local)'}</option>
                 <option value={5}>{lang === 'ar' ? '٥ كم (أغلب المدينة)' : '5 km (Moderate)'}</option>
@@ -661,9 +661,9 @@ export default function CustomerPortal({
           </div>
 
           {/* Prescription Attachment Mock */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-slate-200">
+              <span className="text-base font-medium font-semibold text-slate-200">
                 {lang === 'ar' ? 'صورة الوصفة الطبية (Rx)' : 'Prescription Photo (Rx)'}
               </span>
               <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
@@ -683,18 +683,18 @@ export default function CustomerPortal({
                     `Customer attached a prescription image for the medication`
                   );
                 }}
-                className="w-full border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-xl py-4 flex flex-col items-center justify-center gap-1.5 transition group"
+                className="w-full border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-xl py-4 flex flex-col items-center justify-center gap-1.5 transition group"
               >
                 <UploadCloud className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-slate-500">
                   {lang === 'ar' ? 'انقر لمحاكاة إرفاق صورة الوصفة' : 'Click to simulate prescription upload'}
                 </span>
               </button>
             ) : (
-              <div className="flex items-center justify-between bg-slate-950 p-2.5 border border-slate-800 rounded-xl">
+              <div className="flex items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-mono text-slate-300">Prescription_Mock.jpg</span>
+                  <span className="text-base font-medium font-mono text-slate-600">Prescription_Mock.jpg</span>
                 </div>
                 <button
                   type="button"
@@ -711,7 +711,7 @@ export default function CustomerPortal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-mono">
+            <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
               {lang === 'ar' ? 'ملاحظات إضافية للصيدلي (اختياري)' : 'Additional Notes (Optional)'}
             </label>
             <textarea
@@ -719,14 +719,14 @@ export default function CustomerPortal({
               rows={2}
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none transition"
+              className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
             />
           </div>
 
           <button
             type="submit"
             disabled={isBroadcasting}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white font-semibold rounded-xl py-3 shadow-lg shadow-emerald-950/20 active:scale-98 transition duration-150 flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-100 text-white font-semibold rounded-xl py-3 shadow-lg shadow-emerald-950/20 active:scale-98 transition duration-150 flex items-center justify-center gap-2 text-base font-medium"
           >
             {isBroadcasting ? (
               <>
@@ -745,13 +745,13 @@ export default function CustomerPortal({
         /* LIVE RESULTS MONITORING PANEL */
         <div className="space-y-5">
           {/* Active Request Overview Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-900/50 px-2 py-0.5 rounded-full font-mono font-bold uppercase tracking-wider">
                   {lang === 'ar' ? 'بث جاري حالياً' : 'LIVE BROADCAST'}
                 </span>
-                <h3 className="text-base font-bold text-white mt-1.5">
+                <h3 className="text-base font-bold text-slate-900 mt-1.5">
                   {activeRequest.productName}
                 </h3>
               </div>
@@ -766,13 +766,13 @@ export default function CustomerPortal({
                     `Customer cancelled the active search broadcast`
                   );
                 }}
-                className="text-xs text-red-400 hover:underline"
+                className="text-base font-medium text-red-400 hover:underline"
               >
                 {lang === 'ar' ? 'إلغاء البحث' : 'Stop Search'}
               </button>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/60 pt-3">
+            <div className="flex items-center justify-between text-base font-medium text-slate-500 border-t border-slate-200/60 pt-3">
               <span>{lang === 'ar' ? `نطاق البحث: ${activeRequest.radiusKm}كم` : `Radius: ${activeRequest.radiusKm}km`}</span>
               <span className="font-mono text-[11px]">{activeRequest.createdAt}</span>
             </div>
@@ -781,11 +781,11 @@ export default function CustomerPortal({
           {/* Real-time Streaming Response Status */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300 font-mono">
+              <h3 className="text-base font-medium font-semibold uppercase tracking-wider text-slate-600 font-mono">
                 {lang === 'ar' ? 'الردود المستلمة من الصيدليات' : 'STREAMING PHARMACY RESPONSES'}
               </h3>
               
-              <span className="text-xs text-slate-400 flex items-center gap-1">
+              <span className="text-base font-medium text-slate-500 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 {lang === 'ar' 
                   ? `${activeRequestResponses.length} صيدليات أجابت` 
@@ -795,11 +795,11 @@ export default function CustomerPortal({
 
             {/* List of responses */}
             {activeRequestResponses.length === 0 ? (
-              <div className="border border-slate-800 rounded-2xl p-6 text-center space-y-3 bg-slate-900/10">
-                <div className="w-10 h-10 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center mx-auto animate-spin">
+              <div className="border border-slate-200 rounded-2xl p-6 text-center space-y-3 bg-slate-50/10">
+                <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center mx-auto animate-spin">
                   <RefreshCw className="w-4 h-4 text-emerald-400" />
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-base font-medium text-slate-500">
                   {lang === 'ar' 
                     ? 'في انتظار الصيدليات للاستعلام عن المخزون... (استخدم محاكي الصيدلية للرد!)' 
                     : 'Awaiting pharmacies to query their stock... (Try responding from the Pharmacy tab!)'}
@@ -810,14 +810,14 @@ export default function CustomerPortal({
                 {activeRequestResponses.map((res) => (
                   <div 
                     key={res.id} 
-                    className="bg-slate-900 border border-slate-800 hover:border-slate-700 p-4 rounded-2xl space-y-3 transition"
+                    className="bg-slate-50 border border-slate-200 hover:border-slate-300 p-4 rounded-2xl space-y-3 transition"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="text-sm font-bold text-white">
+                        <h4 className="text-base font-medium font-bold text-slate-900">
                           {getPharmacyName(res.pharmacyId, lang)}
                         </h4>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                        <span className="text-[10px] text-slate-500 block mt-0.5">
                           📍 {getPharmacyDistance(res.pharmacyId)} كم • {lang === 'ar' ? 'عنيزة' : 'Unaizah'}
                         </span>
                       </div>
@@ -844,7 +844,7 @@ export default function CustomerPortal({
 
                     {/* Price and details display */}
                     {(res.status === 'available' || res.status === 'alternative') && (
-                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/40 text-xs flex justify-between items-center">
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/40 text-base font-medium flex justify-between items-center">
                         <div className="space-y-0.5">
                           {res.status === 'alternative' && (
                             <p className="text-[10px] text-amber-300">
@@ -852,7 +852,7 @@ export default function CustomerPortal({
                             </p>
                           )}
                           {res.notes && (
-                            <p className="text-[10px] text-slate-400">
+                            <p className="text-[10px] text-slate-500">
                               "{res.notes}"
                             </p>
                           )}
@@ -867,7 +867,7 @@ export default function CustomerPortal({
                     {res.status !== 'not_available' && (
                       <button
                         onClick={() => handleReserve(res)}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-xl text-xs transition duration-150"
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-xl text-base font-medium transition duration-150"
                       >
                         {lang === 'ar' ? 'احجز هذا واستلم خلال ٣٠ دقيقة ⏱️' : 'Reserve and Hold for 30 Mins ⏱️'}
                       </button>
@@ -880,8 +880,8 @@ export default function CustomerPortal({
 
           {/* Radius Expansion Prompt Overlay / Banner */}
           {showRadiusExpansionPrompt && activeRequest.radiusKm < 50 && (
-            <div className="p-4 bg-slate-900 border border-amber-500/20 rounded-2xl space-y-2.5 shadow-md">
-              <div className="flex gap-2 items-start text-xs text-amber-400">
+            <div className="p-4 bg-slate-50 border border-amber-500/20 rounded-2xl space-y-2.5 shadow-md">
+              <div className="flex gap-2 items-start text-base font-medium text-amber-400">
                 <Sliders className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                 <p>
                   {lang === 'ar' 
@@ -892,7 +892,7 @@ export default function CustomerPortal({
               <button
                 type="button"
                 onClick={handleExpandRadius}
-                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-1.5 px-3 rounded-lg text-xs transition"
+                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-1.5 px-3 rounded-lg text-base font-medium transition"
               >
                 {lang === 'ar' ? `توسيع النطاق إلى ${radiusKm === 3 ? '٥' : '١٠'} كم` : `Expand to ${radiusKm === 3 ? '5' : '10'} km`}
               </button>

@@ -160,7 +160,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       } else if (err.code === 'auth/code-expired') {
         setError(lang === 'ar' ? 'رمز التحقق منتهي الصلاحية' : 'Verification code expired');
       } else {
-        setError(lang === 'ar' ? 'حدث خطأ أثناء التحقق من الرمز' : 'Error verifying code');
+        setError(lang === 'ar' ? `حدث خطأ أثناء التحقق من الرمز: ${err.message}` : `Error verifying code: ${err.message}`);
       }
     } finally {
       setLoading(false);
@@ -168,34 +168,34 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
   };
 
   const roleLabels = {
-    customer: lang === 'ar' ? 'مريض' : 'Patient',
+    customer: lang === 'ar' ? 'عميل' : 'Customer',
     pharmacy: lang === 'ar' ? 'صيدلي' : 'Pharmacist',
     admin: lang === 'ar' ? 'مسؤول' : 'Admin'
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-slate-950 border border-slate-800 p-8 rounded-3xl shadow-2xl animate-fade-in">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
+      <div className="max-w-md w-full bg-white border border-slate-200 p-8 md:p-10 rounded-[2rem] shadow-xl animate-fade-in">
         
-        <div className="text-center mb-8 space-y-2">
-          <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            {role === 'customer' && <User className="w-7 h-7 text-white" />}
-            {role === 'pharmacy' && <Building2 className="w-7 h-7 text-white" />}
-            {role === 'admin' && <ShieldCheck className="w-7 h-7 text-white" />}
+        <div className="text-center mb-10 space-y-3">
+          <div className="w-16 h-16 bg-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            {role === 'customer' && <User className="w-8 h-8 text-emerald-600" />}
+            {role === 'pharmacy' && <Building2 className="w-8 h-8 text-emerald-600" />}
+            {role === 'admin' && <ShieldCheck className="w-8 h-8 text-emerald-600" />}
           </div>
-          <h2 className="text-2xl font-black text-white">
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">
             {isLogin 
-              ? (lang === 'ar' ? `تسجيل الدخول كـ ${roleLabels[role]}` : `Login as ${roleLabels[role]}`)
-              : (lang === 'ar' ? `إنشاء حساب ${roleLabels[role]}` : `Register as ${roleLabels[role]}`)
+              ? (lang === 'ar' ? `دخول ${roleLabels[role]}` : `Login as ${roleLabels[role]}`)
+              : (lang === 'ar' ? `تسجيل ${roleLabels[role]}` : `Register as ${roleLabels[role]}`)
             }
           </h2>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-500 text-base font-medium">
             {lang === 'ar' ? 'نظام وينهوبه - عنيزة' : 'Wenhoboh System - Unaizah'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-950/50 border border-red-900/50 rounded-xl text-red-400 text-xs text-center">
+          <div className="mb-8 p-4 bg-red-50 border-2 border-red-100 rounded-2xl text-red-600 text-sm font-semibold text-center">
             {error}
           </div>
         )}
@@ -203,28 +203,29 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
         <div id="recaptcha-container"></div>
 
         {!confirmationResult ? (
-          <form onSubmit={handleSendOtp} className="space-y-4">
+          <form onSubmit={handleSendOtp} className="space-y-5">
             {!isLogin && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 ml-1">
-                    {lang === 'ar' ? 'الاسم' : 'Name'}
+                  <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+                    {lang === 'ar' ? 'الاسم بالكامل' : 'Full Name'}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       required
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-10 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
+                      placeholder={lang === 'ar' ? 'اكتب اسمك هنا...' : 'Enter your name...'}
                     />
                   </div>
                 </div>
 
                 {role === 'pharmacy' && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1.5 ml-1">
+                    <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
                       {lang === 'ar' ? 'رقم الترخيص' : 'License Number'}
                     </label>
                     <input
@@ -232,7 +233,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
                       type="text"
                       value={license}
                       onChange={(e) => setLicense(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
                     />
                   </div>
                 )}
@@ -240,18 +241,18 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 ml-1">
-                {lang === 'ar' ? 'رقم الهاتف' : 'Phone Number'}
+              <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+                {lang === 'ar' ? 'رقم الجوال' : 'Phone Number'}
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   required
                   type="tel"
                   placeholder="05XXXXXXXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-10 py-3 text-sm focus:outline-none focus:border-emerald-500 transition-colors text-left"
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-bold text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all text-left placeholder:text-slate-400 placeholder:font-medium"
                   dir="ltr"
                 />
               </div>
@@ -260,33 +261,33 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl py-3 mt-6 transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl py-4 mt-8 text-lg transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-3 disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  {lang === 'ar' ? 'إرسال رمز التحقق' : 'Send SMS OTP'}
-                  <ArrowRight className="w-4 h-4" />
+                  {lang === 'ar' ? 'إرسال الرمز' : 'Send SMS OTP'}
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
           </form>
         ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <form onSubmit={handleVerifyOtp} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 ml-1">
-                {lang === 'ar' ? 'رمز التحقق (OTP)' : 'Verification Code (OTP)'}
+              <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+                {lang === 'ar' ? 'رمز التحقق (رسالة نصية)' : 'Verification Code (OTP)'}
               </label>
               <div className="relative">
-                <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <CheckCircle2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   required
                   type="text"
                   placeholder="123456"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-10 py-3 text-sm tracking-[0.5em] text-center font-bold focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-2xl tracking-[0.5em] text-center font-black text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-300 placeholder:font-medium placeholder:text-base placeholder:tracking-normal"
                   dir="ltr"
                   maxLength={6}
                 />
@@ -296,14 +297,14 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
             <button
               type="submit"
               disabled={loading || otp.length < 6}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl py-3 mt-6 transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl py-4 mt-8 text-lg transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-3 disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  {lang === 'ar' ? 'تأكيد الرمز' : 'Verify Code'}
-                  <CheckCircle2 className="w-4 h-4" />
+                  {lang === 'ar' ? 'تأكيد ودخول' : 'Verify & Enter'}
+                  <CheckCircle2 className="w-5 h-5" />
                 </>
               )}
             </button>
@@ -314,22 +315,22 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
                 setConfirmationResult(null);
                 setOtp('');
               }}
-              className="w-full py-2 text-xs text-slate-400 hover:text-white transition-colors"
+              className="w-full py-3 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors"
             >
-              {lang === 'ar' ? 'تغيير رقم الهاتف' : 'Change Phone Number'}
+              {lang === 'ar' ? 'تغيير رقم الجوال؟' : 'Change Phone Number?'}
             </button>
           </form>
         )}
 
         {!confirmationResult && (
-          <div className="mt-6 text-center">
+          <div className="mt-8 pt-6 border-t-2 border-slate-100 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="text-sm font-bold text-emerald-600 hover:text-emerald-500 transition-colors"
             >
               {isLogin 
-                ? (lang === 'ar' ? 'ليس لديك حساب؟ قم بالتسجيل' : 'No account? Register instead')
-                : (lang === 'ar' ? 'لديك حساب؟ سجل الدخول' : 'Already have an account? Login')
+                ? (lang === 'ar' ? 'مستخدم جديد؟ اضغط هنا للتسجيل' : 'New user? Click here to register')
+                : (lang === 'ar' ? 'لديك حساب بالفعل؟ تسجيل الدخول' : 'Already have an account? Login here')
               }
             </button>
           </div>
