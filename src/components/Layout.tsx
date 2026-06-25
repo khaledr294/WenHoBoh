@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Language } from '../types';
-import { Globe, LogOut, Bot, Heart } from 'lucide-react';
+import { Globe, LogOut, Bot, Heart, Building2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
 export default function Layout({ lang, setLang }: any) {
@@ -54,6 +54,16 @@ export default function Layout({ lang, setLang }: any) {
 
           {/* Controls Panel */}
           <div className="flex items-center gap-2.5">
+            {!user && (
+              <button
+                onClick={() => navigate('/partner-pharmacy-login')}
+                className="bg-blue-50 hover:bg-blue-100 border-2 border-blue-100 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <Building2 className="w-4 h-4 text-blue-600" />
+                <span className="hidden sm:inline">{lang === 'ar' ? 'دخول الشركاء' : 'Partner Portal'}</span>
+              </button>
+            )}
+
             {/* Exit/Logout Button */}
             {user && (
               <button

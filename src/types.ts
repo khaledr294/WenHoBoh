@@ -40,6 +40,7 @@ export interface CustomerRequest {
   radiusKm: number;
   prescriptionImage: string | null;
   notes: string | null;
+  acceptsAlternative: boolean;
   status: 'active' | 'fulfilled' | 'expired' | 'cancelled';
   createdAt: string;
   expiresAt: string;

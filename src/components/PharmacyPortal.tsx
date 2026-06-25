@@ -418,14 +418,14 @@ export default function PharmacyPortal({
                   </div>
 
                   {!showAlternativeForm ? (
-                    <div className="grid grid-cols-3 gap-2.5">
+                    <div className="flex gap-2.5">
                       <button
                         type="button"
                         onClick={() => {
                           // Quick available reply
                           handleSendResponse('available');
                         }}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'متوفر ✓' : 'Available ✓'}
                       </button>
@@ -436,18 +436,20 @@ export default function PharmacyPortal({
                           // Out of stock
                           handleSendResponse('not_available');
                         }}
-                        className="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
+                        className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'غير متوفر ✗' : 'Out of Stock ✗'}
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setShowAlternativeForm(true)}
-                        className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
-                      >
-                        {lang === 'ar' ? 'توفير بديل 🔄' : 'Offer Alt 🔄'}
-                      </button>
+                      {activeRequest.acceptsAlternative !== false && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAlternativeForm(true)}
+                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
+                        >
+                          {lang === 'ar' ? 'توفير بديل 🔄' : 'Offer Alt 🔄'}
+                        </button>
+                      )}
                     </div>
                   ) : (
                     /* Alternative product form */

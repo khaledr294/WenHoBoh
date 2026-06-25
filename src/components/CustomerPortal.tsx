@@ -65,11 +65,34 @@ export default function CustomerPortal({
   customerCoords,
 }: CustomerPortalProps) {
   const { user: firebaseUser } = useAuth();
+  const [customerName, setCustomerName] = useState(firebaseUser?.displayName || (lang === 'ar' ? 'عميل مسجل' : 'Registered Customer'));
+
+  useEffect(() => {
+    if (firebaseUser?.uid) {
+      const fetchCustomerName = async () => {
+        try {
+          const { getDoc, doc } = await import('firebase/firestore');
+          const { db } = await import('../lib/firebase');
+          const docSnap = await getDoc(doc(db, 'customers', firebaseUser.uid));
+          if (docSnap.exists() && docSnap.data().name) {
+            setCustomerName(docSnap.data().name);
+            if (!firebaseUser.displayName) {
+              const { updateProfile } = await import('firebase/auth');
+              await updateProfile(firebaseUser, { displayName: docSnap.data().name });
+            }
+          }
+        } catch (e) {
+          console.error('Error fetching customer name:', e);
+        }
+      };
+      fetchCustomerName();
+    }
+  }, [firebaseUser, lang]);
   
   // Extract user info from Firebase user
   const user = {
     phone: firebaseUser?.phoneNumber || firebaseUser?.email || '',
-    name: firebaseUser?.displayName || 'عميل مسجل',
+    name: customerName,
     isRegistered: true,
   };
 
@@ -80,6 +103,7 @@ export default function CustomerPortal({
   const [notes, setNotes] = useState('');
   const [prescriptionAttached, setPrescriptionAttached] = useState(false);
   const [prescriptionUrl, setPrescriptionUrl] = useState<string | null>(null);
+  const [acceptsAlternative, setAcceptsAlternative] = useState(true);
 
   // Demo helper states
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -151,6 +175,7 @@ export default function CustomerPortal({
       radiusKm,
       prescriptionImage: prescriptionUrl,
       notes: notes.trim() || null,
+      acceptsAlternative,
       status: 'active',
       createdAt: new Date().toLocaleTimeString(),
       expiresAt: new Date(Date.now() + 60 * 60 * 1000).toLocaleTimeString(),
@@ -435,7 +460,7 @@ export default function CustomerPortal({
               <span className="text-slate-500 uppercase tracking-wide block text-[9px] font-mono mb-0.5">
                 {lang === 'ar' ? 'المنتج المحجوز' : 'RESERVED PRODUCT'}
               </span>
-              <span className="font-semibold text-slate-200">
+              <span className="font-semibold text-slate-900">
                 {activeRequest?.productName}
               </span>
             </div>
@@ -457,7 +482,7 @@ export default function CustomerPortal({
               <div className="flex items-center gap-2.5">
                 <Navigation className="w-4 h-4 text-blue-400 animate-pulse flex-shrink-0" />
                 <div>
-                  <span className="font-semibold text-base font-medium text-slate-200 block">
+                  <span className="font-semibold text-base font-medium text-slate-900 block">
                     {lang === 'ar' ? 'اتجاهات الملاحة والمسار الحي' : 'Live Navigation & Driving Route'}
                   </span>
                   <span className="text-[10px] text-slate-500 block">
@@ -504,7 +529,7 @@ export default function CustomerPortal({
                 setActiveReservation(null);
                 setActiveRequest(null);
               }}
-              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-200 border border-slate-200 font-semibold py-3 rounded-xl transition text-base font-medium"
+              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 font-semibold py-3 rounded-xl transition text-base font-medium"
             >
               {lang === 'ar' ? 'الرجوع للرئيسية وإجراء بحث جديد' : 'Back to Dashboard & Search Again'}
             </button>
@@ -631,7 +656,7 @@ export default function CustomerPortal({
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as ProductCategory)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 transition"
               >
                 <option value="otc">{lang === 'ar' ? 'لا وصفة (OTC)' : 'Over the Counter'}</option>
                 <option value="rx">{lang === 'ar' ? 'بوصفة طبيب (Rx)' : 'Prescription'}</option>
@@ -650,7 +675,7 @@ export default function CustomerPortal({
               <select
                 value={radiusKm}
                 onChange={e => setRadiusKm(Number(e.target.value))}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition font-mono"
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 transition font-mono"
               >
                 <option value={3}>{lang === 'ar' ? '٣ كم (محيطك المباشر)' : '3 km (Local)'}</option>
                 <option value={5}>{lang === 'ar' ? '٥ كم (أغلب المدينة)' : '5 km (Moderate)'}</option>
@@ -663,7 +688,7 @@ export default function CustomerPortal({
           {/* Prescription Attachment Mock */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-base font-medium font-semibold text-slate-200">
+              <span className="text-base font-medium font-semibold text-slate-900">
                 {lang === 'ar' ? 'صورة الوصفة الطبية (Rx)' : 'Prescription Photo (Rx)'}
               </span>
               <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
@@ -723,6 +748,18 @@ export default function CustomerPortal({
             />
           </div>
 
+          <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition">
+            <input 
+              type="checkbox"
+              checked={acceptsAlternative}
+              onChange={(e) => setAcceptsAlternative(e.target.checked)}
+              className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+            />
+            <span className="text-base font-semibold text-slate-700">
+              {lang === 'ar' ? 'أقبل ببديل علمي بنفس المادة الفعالة' : 'Accept scientific alternative with same active ingredient'}
+            </span>
+          </label>
+
           <button
             type="submit"
             disabled={isBroadcasting}
@@ -736,7 +773,7 @@ export default function CustomerPortal({
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                {lang === 'ar' ? 'بث طلب الدواء الآن 📡' : 'Broadcast Medication Demand Now 📡'}
+                {lang === 'ar' ? 'وينهوبه 📡' : 'Wenhoboh 📡'}
               </>
             )}
           </button>

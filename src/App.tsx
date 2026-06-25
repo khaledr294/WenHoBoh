@@ -4,10 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './lib/AuthContext';
 import AuthPage from './components/AuthPage';
-import Gateway from './components/Gateway';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { 
@@ -342,7 +341,7 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout lang={lang} setLang={setLang} />}>
-        <Route index element={<Gateway lang={lang} />} />
+        <Route index element={<Navigate to="/customer" replace />} />
         
         <Route path="auth/customer" element={<AuthPage role="customer" lang={lang} />} />
         <Route path="partner-pharmacy-login" element={<AuthPage role="pharmacy" lang={lang} />} />
@@ -361,7 +360,7 @@ export default function App() {
                   selectedPharmacyId={activeReservation ? activeReservation.pharmacyId : null}
                   lang={lang}
                 />
-                <StartupThesis lang={lang} />
+                
               </div>
               <div className="lg:col-span-7">
                 <CustomerPortal 
@@ -394,7 +393,7 @@ export default function App() {
                   selectedPharmacyId={activeReservation ? activeReservation.pharmacyId : null}
                   lang={lang}
                 />
-                <StartupThesis lang={lang} />
+                
               </div>
               <div className="lg:col-span-7">
                 <PharmacyPortal 
@@ -425,7 +424,7 @@ export default function App() {
                   selectedPharmacyId={activeReservation ? activeReservation.pharmacyId : null}
                   lang={lang}
                 />
-                <StartupThesis lang={lang} />
+                
               </div>
               <div className="lg:col-span-7">
                 <AdminPortal 
@@ -445,36 +444,3 @@ export default function App() {
   );
 }
 
-function StartupThesis({ lang }: { lang: Language }) {
-  return (
-    <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 space-y-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-2">
-        <Info className="w-4 h-4 text-emerald-500" />
-        {lang === 'ar' ? 'نبذة عن نموذج عمل وينهوبه (و)' : 'WENHOBOH STARTUP THESIS'}
-      </h3>
-
-      <div className="text-xs space-y-3 leading-relaxed text-slate-300">
-        <p>
-          {lang === 'ar' 
-            ? 'نموذج بث الطلب هو الحل الأمثل لمشكلة توفر الأدوية. لا نحتاج للربط التقني مع أنظمة مخزون الصيدليات المتناثرة والمعقدة (Zero ERP Integration)!' 
-            : 'Wenhoboh reverses the pharmacy model: instead of heavy POS/ERP stock integrations, patients broadcast requests directly to nearby pharmacists. No onboarding friction!'}
-        </p>
-        
-        <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t border-slate-800/50">
-          <div className="bg-slate-900 p-2.5 rounded-xl">
-            <span className="text-[9px] text-slate-500 block font-semibold">TARGET MARKET</span>
-            <span className="text-xs font-bold text-emerald-400 font-mono">Qassim, KSA</span>
-          </div>
-          <div className="bg-slate-900 p-2.5 rounded-xl">
-            <span className="text-[9px] text-slate-500 block font-semibold">ONBOARDING TIME</span>
-            <span className="text-xs font-bold text-white font-mono">5 Minutes</span>
-          </div>
-          <div className="bg-slate-900 p-2.5 rounded-xl">
-            <span className="text-[9px] text-slate-500 block font-semibold">EST. LTV:CAC</span>
-            <span className="text-xs font-bold text-white font-mono">17 : 1</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
