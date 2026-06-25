@@ -69,9 +69,15 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       setConfirmationResult(result);
     } catch (err: any) {
       if (err.code === 'auth/operation-not-allowed') {
-        setError(lang === 'ar' 
-          ? 'يرجى تفعيل خيار تسجيل الدخول برقم الهاتف من لوحة تحكم Firebase'
-          : 'Please enable Phone authentication provider in your Firebase Console');
+        if (err.message && err.message.includes('region enabled')) {
+          setError(lang === 'ar' 
+            ? 'يرجى تفعيل إرسال الرسائل النصية القصيرة (SMS) لمنطقتك من إعدادات Firebase Authentication'
+            : 'Please enable SMS for your region in Firebase Authentication settings');
+        } else {
+          setError(lang === 'ar' 
+            ? 'يرجى تفعيل خيار تسجيل الدخول برقم الهاتف من لوحة تحكم Firebase'
+            : 'Please enable Phone authentication provider in your Firebase Console');
+        }
       } else {
         setError(err.message || 'Failed to send SMS');
       }

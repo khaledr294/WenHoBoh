@@ -22,9 +22,13 @@ export const auth = getAuth(app);
  * 1. Go to your Firebase Console: https://console.firebase.google.com/
  * 2. Select your project.
  * 3. Navigate to "Authentication" > "Sign-in method".
- * 4. Enable "Email/Password" provider.
- * 5. Enable "Phone" provider.
- * 6. Save your changes and try logging in again.
+ * 4. Enable "Phone" provider.
+ * 
+ * IF YOU GET A REGION ERROR ("SMS unable to be sent until this region enabled"):
+ * 1. In Firebase Console, go to "Authentication" > "Settings".
+ * 2. Click on "SMS Region Policy".
+ * 3. Select "Allow only specific regions" (or "Allow all") and add the countries you are testing from (e.g., Saudi Arabia).
+ * 4. Save your changes and try logging in again.
  */
 
 export const db = getFirestore(app, config.firestoreDatabaseId || undefined);
