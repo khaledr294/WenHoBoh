@@ -78,6 +78,10 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
             ? 'يرجى تفعيل خيار تسجيل الدخول برقم الهاتف من لوحة تحكم Firebase'
             : 'Please enable Phone authentication provider in your Firebase Console');
         }
+      } else if (err.code === 'auth/invalid-phone-number') {
+        setError(lang === 'ar' 
+          ? 'رقم الهاتف المدخل غير صحيح'
+          : 'The phone number entered is invalid');
       } else {
         setError(err.message || 'Failed to send SMS');
       }
@@ -151,7 +155,13 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       else navigate('/customer');
 
     } catch (err: any) {
-      setError(lang === 'ar' ? 'رمز التحقق غير صحيح أو منتهي الصلاحية' : 'Invalid or expired verification code');
+      if (err.code === 'auth/invalid-verification-code') {
+        setError(lang === 'ar' ? 'رمز التحقق غير صحيح' : 'Invalid verification code');
+      } else if (err.code === 'auth/code-expired') {
+        setError(lang === 'ar' ? 'رمز التحقق منتهي الصلاحية' : 'Verification code expired');
+      } else {
+        setError(lang === 'ar' ? 'حدث خطأ أثناء التحقق من الرمز' : 'Error verifying code');
+      }
     } finally {
       setLoading(false);
     }
