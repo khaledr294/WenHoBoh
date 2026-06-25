@@ -12,6 +12,21 @@ console.log("Using Firestore Database ID:", config.firestoreDatabaseId);
 
 const app = initializeApp(config);
 export const auth = getAuth(app);
+
+/**
+ * ⚠️ IMPORTANT AUTHENTICATION SETUP INSTRUCTIONS ⚠️
+ * 
+ * If you encounter the 'auth/operation-not-allowed' error, you must enable
+ * the corresponding authentication providers in the Firebase Console:
+ * 
+ * 1. Go to your Firebase Console: https://console.firebase.google.com/
+ * 2. Select your project.
+ * 3. Navigate to "Authentication" > "Sign-in method".
+ * 4. Enable "Email/Password" provider.
+ * 5. Enable "Phone" provider.
+ * 6. Save your changes and try logging in again.
+ */
+
 export const db = getFirestore(app, config.firestoreDatabaseId || undefined);
 
 enum OperationType {

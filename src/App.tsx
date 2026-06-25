@@ -345,8 +345,8 @@ export default function App() {
         <Route index element={<Gateway lang={lang} />} />
         
         <Route path="auth/customer" element={<AuthPage role="customer" lang={lang} />} />
-        <Route path="auth/pharmacy" element={<AuthPage role="pharmacy" lang={lang} />} />
-        <Route path="auth/admin" element={<AuthPage role="admin" lang={lang} />} />
+        <Route path="partner-pharmacy-login" element={<AuthPage role="pharmacy" lang={lang} />} />
+        <Route path="system-admin-portal" element={<AuthPage role="admin" lang={lang} />} />
 
         <Route path="customer" element={
           <ProtectedRoute role="customer">

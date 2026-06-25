@@ -7,10 +7,23 @@ import { useAuth } from '../lib/AuthContext';
 export default function Layout({ lang, setLang }: any) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [secretClicks, setSecretClicks] = React.useState(0);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleLogoClick = () => {
+    if (secretClicks + 1 >= 5) {
+      setSecretClicks(0);
+      navigate('/system-admin-portal');
+    } else {
+      setSecretClicks(prev => prev + 1);
+      if (secretClicks === 0) {
+        navigate('/');
+      }
+    }
   };
 
   return (
@@ -20,7 +33,7 @@ export default function Layout({ lang, setLang }: any) {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
           
           {/* Logo & Slogan */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={handleLogoClick}>
             <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-md shadow-emerald-950">
               و
             </div>
