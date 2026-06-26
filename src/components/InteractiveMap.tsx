@@ -601,7 +601,7 @@ export default function InteractiveMap({
             })}
 
             {/* Drag instruction overlay footer inside Map */}
-            <div className="absolute top-2 left-2 bg-white/90 border border-slate-200 px-2.5 py-1 rounded-xl text-[9px] text-slate-700 font-semibold pointer-events-none">
+            <div className="absolute top-2 start-2 bg-white/90 border border-slate-200 px-2.5 py-1 rounded-xl text-[9px] text-slate-700 font-semibold pointer-events-none">
               💡 {lang === 'ar' ? 'انقر على أي مكان بالخريطة لنقل موقعك الجغرافي وبث الطلب!' : 'Click or drag anywhere on map to update your broadcast coordinates!'}
             </div>
 
@@ -612,7 +612,7 @@ export default function InteractiveMap({
 
       {/* Real-time Routing HUD Footer Overlay */}
       {activeReservation && (
-        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md border border-blue-500/50 p-2.5 rounded-2xl shadow-2xl z-20 flex items-center justify-between text-right font-sans">
+        <div className="absolute bottom-3 start-3 end-3 bg-white/95 backdrop-blur-md border border-blue-500/50 p-2.5 rounded-2xl shadow-2xl z-20 flex items-center justify-between text-end font-sans">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-blue-950 rounded-lg flex items-center justify-center border border-blue-800/40">
               <Navigation className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
@@ -646,7 +646,7 @@ export default function InteractiveMap({
       )}
 
       {/* Quick Legend indicators */}
-      <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-0.5 pointer-events-none text-right">
+      <div className="absolute bottom-3 end-3 z-10 flex flex-col gap-0.5 pointer-events-none text-end">
         <div className="bg-white/95 backdrop-blur-md px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1.5 shadow">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
           <span className="text-[8px] text-slate-700">{lang === 'ar' ? 'موقعك (انقر لنقله)' : 'You (Click to move)'}</span>

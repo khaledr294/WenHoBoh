@@ -443,7 +443,7 @@ export default function CustomerPortal({
               </p>
             </div>
             
-            <div className="text-right">
+            <div className="text-end">
               <span className="inline-flex items-center gap-1 text-base font-medium text-amber-400 bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-800/20 font-mono">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                 {getPharmacyRating(activeReservation.pharmacyId)}
@@ -615,14 +615,14 @@ export default function CustomerPortal({
               {lang === 'ar' ? 'اسم الدواء أو المنتج المطلوب' : 'Product Name / Description'}
             </label>
             <div className="relative">
-              <Search className="absolute left-4 top-3 text-slate-500 w-4 h-4" />
+              <Search className="absolute start-4 top-3 text-slate-500 w-4 h-4" />
               <input
                 type="text"
                 placeholder={lang === 'ar' ? 'أدخل الدواء بالتفصيل (مثل: أنسولين لانتوس)' : 'Enter exact product name...'}
                 required
                 value={productName}
                 onChange={e => setProductName(e.target.value)}
-                className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl pl-11 pr-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
+                className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl ps-11 pe-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
               />
             </div>
           </div>
@@ -705,7 +705,7 @@ export default function CustomerPortal({
                       <button
                         type="button"
                         onClick={() => setPrescriptionImages(prev => prev.filter((_, i) => i !== idx))}
-                        className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 end-1 bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         title={lang === 'ar' ? 'إزالة' : 'Remove'}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
@@ -878,7 +878,7 @@ export default function CustomerPortal({
                             </p>
                           )}
                         </div>
-                        <div className="text-right font-mono text-emerald-400 font-semibold">
+                        <div className="text-end font-mono text-emerald-400 font-semibold">
                           {res.price ? `${res.price} SAR` : (lang === 'ar' ? 'تسعير رسمي' : 'Official Pricing')}
                         </div>
                       </div>

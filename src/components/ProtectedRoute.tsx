@@ -10,7 +10,13 @@ export default function ProtectedRoute({ children, role }: { children: React.Rea
   }
 
   if (!user) {
+    if (role === 'admin') return <Navigate to={`/system-admin-portal`} replace />;
+    if (role === 'pharmacy') return <Navigate to={`/partner-pharmacy-login`} replace />;
     return <Navigate to={`/auth/${role}`} replace />;
+  }
+
+  if (role === 'admin' && user.phoneNumber !== '+966501511643') {
+    return <Navigate to={`/system-admin-portal`} replace />;
   }
 
   return <>{children}</>;

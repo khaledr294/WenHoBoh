@@ -351,7 +351,7 @@ export default function PharmacyPortal({
           </div>
         </div>
 
-        <div className="flex gap-4 text-center sm:text-right text-base font-medium">
+        <div className="flex gap-4 text-center sm:text-end text-base font-medium">
           <div>
             <span className="text-[9px] text-slate-500 block font-mono">RATING</span>
             <span className="font-semibold text-amber-400 flex items-center justify-center sm:justify-end gap-0.5 font-mono">

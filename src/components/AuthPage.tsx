@@ -61,6 +61,14 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
 
     try {
       const formattedPhone = formatPhoneNumber(phone);
+      
+      // Admin phone restriction
+      if (role === 'admin' && formattedPhone !== '+966501511643') {
+        setError(lang === 'ar' ? 'غير مصرح لك بالدخول كمسؤول' : 'Unauthorized to login as admin');
+        setLoading(false);
+        return;
+      }
+
       if (!window.recaptchaVerifier) {
         window.recaptchaVerifier = initRecaptcha('recaptcha-container');
       }
@@ -107,24 +115,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
         }
         
         // Setup initial documents
-        if (role === 'pharmacy') {
-          const newPharmacy: Pharmacy = {
-            id: user.uid,
-            nameAr: name,
-            nameEn: name,
-            addressAr: 'عنيزة',
-            addressEn: 'Unaizah',
-            latitude: 26.085,
-            longitude: 43.990,
-            isVerified: false,
-            licenseNumber: license,
-            rating: 5,
-            responseRate: 100,
-            avgResponseTimeSec: 60,
-            status: 'pending'
-          };
-          await setDoc(doc(db, 'pharmacies', user.uid), newPharmacy);
-        } else if (role === 'customer') {
+        if (role === 'customer') {
           await setDoc(doc(db, 'customers', user.uid), {
             id: user.uid,
             name,
@@ -204,14 +195,14 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
 
         {!confirmationResult ? (
           <form onSubmit={handleSendOtp} className="space-y-5">
-            {!isLogin && (
+            {!isLogin && role !== 'pharmacy' && (
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+                  <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
                     {lang === 'ar' ? 'الاسم بالكامل' : 'Full Name'}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <User className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       required
                       type="text"
@@ -225,7 +216,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
 
                 {role === 'pharmacy' && (
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+                    <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
                       {lang === 'ar' ? 'رقم الترخيص' : 'License Number'}
                     </label>
                     <input
@@ -241,18 +232,18 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
             )}
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+              <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
                 {lang === 'ar' ? 'رقم الجوال' : 'Phone Number'}
               </label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Phone className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   required
                   type="tel"
                   placeholder="05XXXXXXXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-bold text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all text-left placeholder:text-slate-400 placeholder:font-medium"
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-bold text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all text-start placeholder:text-slate-400 placeholder:font-medium"
                   dir="ltr"
                 />
               </div>
@@ -276,11 +267,11 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+              <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
                 {lang === 'ar' ? 'رمز التحقق (رسالة نصية)' : 'Verification Code (OTP)'}
               </label>
               <div className="relative">
-                <CheckCircle2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <CheckCircle2 className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   required
                   type="text"
