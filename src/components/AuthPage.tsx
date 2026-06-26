@@ -120,8 +120,13 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
         return;
       }
       
-      if (role === 'admin' && !docSnap.exists()) {
-        await setDoc(docRef, { id: user.uid, role: 'admin' });
+      if (role === 'admin') {
+        if (user.phoneNumber !== '+966501511643') {
+          throw new Error('رقم الجوال هذا غير مصرح له بالدخول كمسؤول');
+        }
+        if (!docSnap.exists()) {
+          await setDoc(docRef, { id: user.uid, role: 'admin', phoneNumber: user.phoneNumber });
+        }
       }
       
       if (role === 'admin') navigate('/admin');
