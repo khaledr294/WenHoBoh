@@ -28,7 +28,12 @@ import {
   Navigation, 
   ShieldAlert, 
   Star,
-  RefreshCw
+  RefreshCw,
+  Bell,
+  Home,
+  Ticket,
+  ChevronRight,
+  ShoppingBag
 } from 'lucide-react';
 
 interface CustomerPortalProps {
@@ -42,6 +47,16 @@ interface CustomerPortalProps {
   lang: Language;
   onLogEvent: (type: any, msgAr: string, msgEn: string) => void;
   customerCoords?: { lat: number; lng: number };
+}
+
+interface NotificationItem {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  bodyAr: string;
+  bodyEn: string;
+  time: string;
+  read: boolean;
 }
 
 const PRESET_PRODUCTS = [
@@ -113,6 +128,64 @@ export default function CustomerPortal({
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+
+  const [activeTab, setActiveTab] = useState<'home' | 'ticket' | 'notifications'>('home');
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: 'welcome',
+      titleAr: 'مرحباً بك في وينهوبه',
+      titleEn: 'Welcome to Wenhoboh',
+      bodyAr: 'تطبيقك لاكتشاف الأدوية في عنيزة جاهز.',
+      bodyEn: 'Your app for discovering medicine in Unaizah is ready.',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    }
+  ]);
+  const [toastNotif, setToastNotif] = useState<NotificationItem | null>(null);
+
+  // Auto switch to ticket tab when active reservation occurs
+  useEffect(() => {
+    if (activeReservation) {
+      setActiveTab('ticket');
+      const newNotif = {
+        id: 'res-' + activeReservation.status + Date.now(),
+        titleAr: 'تحديث حالة الطلب',
+        titleEn: 'Order Update',
+        bodyAr: `تم تحديث حالة حجزك إلى: ${activeReservation.status === 'active' ? 'مؤكد' : activeReservation.status === 'completed' ? 'مكتمل' : 'ملغي/منتهي'}`,
+        bodyEn: `Your reservation status is now: ${activeReservation.status}`,
+        time: new Date().toLocaleTimeString(),
+        read: false
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+      if (activeTab !== 'notifications') {
+        setToastNotif(newNotif);
+        setTimeout(() => setToastNotif(null), 5000);
+      }
+    }
+  }, [activeReservation?.status]);
+
+  // Watch for new responses to active request
+  useEffect(() => {
+    if (activeRequest && responses.length > 0) {
+      const latestResp = responses[responses.length - 1];
+      if (latestResp.requestId === activeRequest.id) {
+        const newNotif = {
+          id: latestResp.id,
+          titleAr: 'تم العثور على طلبك!',
+          titleEn: 'Product Found!',
+          bodyAr: `قامت صيدلية جديدة بالرد على طلبك "${activeRequest.productName}".`,
+          bodyEn: `A new pharmacy responded to your request for "${activeRequest.productName}".`,
+          time: new Date().toLocaleTimeString(),
+          read: false
+        };
+        setNotifications(prev => [newNotif, ...prev]);
+        if (activeTab !== 'notifications') {
+          setToastNotif(newNotif);
+          setTimeout(() => setToastNotif(null), 5000);
+        }
+      }
+    }
+  }, [responses.length]);
 
   // 30-minute Countdown Timer logic for reservation
   const [reservationTimeLeft, setReservationTimeLeft] = useState<number>(1800); // 30 minutes in seconds
@@ -330,11 +403,20 @@ export default function CustomerPortal({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // ACTIVE RESERVATION VIEW
-  if (activeReservation) {
+  const renderTicketTab = () => {
+    if (!activeReservation) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8">
+          <Ticket className="w-16 h-16 text-slate-200" />
+          <p className="text-slate-500 font-medium">
+            {lang === 'ar' ? 'لا يوجد تذاكر حجز نشطة حالياً.' : 'No active reservation tickets.'}
+          </p>
+        </div>
+      );
+    }
     const reservationPharmacy = pharmacies.find(p => p.id === activeReservation.pharmacyId);
     return (
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
+      <div className="space-y-6">
         {/* Ticket Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-5 gap-3">
           <div>
@@ -591,11 +673,12 @@ export default function CustomerPortal({
         )}
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
-      {/* Customer Header */}
+  const renderHomeTab = () => {
+    return (
+      <div className="space-y-6">
+        {/* Customer Header */}
       <div className="flex justify-between items-center border-b border-slate-200 pb-4">
         <div>
           <span className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-slate-500 font-mono">
@@ -921,6 +1004,105 @@ export default function CustomerPortal({
           )}
         </div>
       )}
+    </div>
+    );
+  };
+
+  const renderNotificationsTab = () => {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-6">
+          {lang === 'ar' ? 'الإشعارات' : 'Notifications'}
+        </h2>
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center space-y-4 py-12">
+            <Bell className="w-16 h-16 text-slate-200" />
+            <p className="text-slate-500 font-medium text-lg">
+              {lang === 'ar' ? 'لا يوجد إشعارات حالياً.' : 'No notifications yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map((notif, idx) => (
+              <div 
+                key={`${notif.id}-${idx}`}
+                className={`p-4 rounded-2xl border transition-colors ${!notif.read ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}
+                onClick={() => {
+                  const updated = [...notifications];
+                  updated[idx].read = true;
+                  setNotifications(updated);
+                }}
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <h4 className={`font-bold ${!notif.read ? 'text-blue-900' : 'text-slate-900'}`}>
+                    {lang === 'ar' ? notif.titleAr : notif.titleEn}
+                  </h4>
+                  <span className="text-xs font-mono text-slate-400">{notif.time}</span>
+                </div>
+                <p className={`text-base ${!notif.read ? 'text-blue-800' : 'text-slate-600'}`}>
+                  {lang === 'ar' ? notif.bodyAr : notif.bodyEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-[700px] md:h-full relative overflow-hidden bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl font-sans text-slate-900">
+      
+      {/* Toast Notification (Simulated Push Notif) */}
+      <div className={`absolute top-4 left-4 right-4 z-50 transition-all duration-500 transform ${toastNotif ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
+        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex items-start gap-3">
+          <div className="p-2 bg-emerald-500/20 rounded-xl shrink-0 mt-0.5">
+            <Bell className="w-5 h-5 text-emerald-400 animate-pulse" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-bold text-slate-100">{lang === 'ar' ? toastNotif?.titleAr : toastNotif?.titleEn}</h4>
+            <p className="text-slate-300 text-sm mt-0.5">{lang === 'ar' ? toastNotif?.bodyAr : toastNotif?.bodyEn}</p>
+          </div>
+          <button onClick={() => setToastNotif(null)} className="p-1 hover:bg-slate-800 rounded-lg transition-colors">
+            <XCircle className="w-5 h-5 text-slate-400" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto pb-24 p-6">
+        {activeTab === 'home' && renderHomeTab()}
+        {activeTab === 'ticket' && renderTicketTab()}
+        {activeTab === 'notifications' && renderNotificationsTab()}
+      </div>
+
+      {/* PWA Bottom Navigation Bar */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 pb-6 flex justify-around items-center z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+        <button 
+          onClick={() => setActiveTab('home')}
+          className={`flex flex-col items-center gap-1.5 transition-colors ${activeTab === 'home' ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+        >
+          <Home className={`w-6 h-6 ${activeTab === 'home' ? 'fill-emerald-600/20' : ''}`} />
+          <span className="text-[10px] font-bold uppercase tracking-wider">{lang === 'ar' ? 'الرئيسية' : 'Home'}</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('ticket')}
+          className={`flex flex-col items-center gap-1.5 transition-colors relative ${activeTab === 'ticket' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+        >
+          {activeReservation && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+          <Ticket className={`w-6 h-6 ${activeTab === 'ticket' ? 'fill-blue-600/20' : ''}`} />
+          <span className="text-[10px] font-bold uppercase tracking-wider">{lang === 'ar' ? 'تذكرتي' : 'Ticket'}</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('notifications')}
+          className={`flex flex-col items-center gap-1.5 transition-colors relative ${activeTab === 'notifications' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600'}`}
+        >
+          {notifications.some(n => !n.read) && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+          <Bell className={`w-6 h-6 ${activeTab === 'notifications' ? 'fill-amber-500/20' : ''}`} />
+          <span className="text-[10px] font-bold uppercase tracking-wider">{lang === 'ar' ? 'إشعارات' : 'Alerts'}</span>
+        </button>
+      </div>
     </div>
   );
 }
