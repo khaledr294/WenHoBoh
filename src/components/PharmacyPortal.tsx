@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Pharmacy, 
   CustomerRequest, 
@@ -23,8 +23,13 @@ import {
   Eye, 
   Star,
   Bell,
-  Volume2
+  Volume2,
+  Upload,
+  MapPin
 } from 'lucide-react';
+import { useAuth } from '../lib/AuthContext';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface PharmacyPortalProps {
   pharmacies: Pharmacy[];
@@ -47,8 +52,67 @@ export default function PharmacyPortal({
   lang,
   onLogEvent,
 }: PharmacyPortalProps) {
-  // Currently active selected pharmacy viewpoint
-  const [selectedPharmacyId, setSelectedPharmacyId] = useState<string>(pharmacies[0].id);
+  const { user } = useAuth();
+  
+  // Registration States
+  const [registrationStatus, setRegistrationStatus] = useState<'loading' | 'needs_registration' | 'pending_approval' | 'approved'>('loading');
+  const [regForm, setRegForm] = useState({
+    nameAr: '',
+    nameEn: '',
+    addressAr: '',
+    addressEn: '',
+    licenseNumber: '',
+    licenseImageUrl: '',
+    operatingHours: ''
+  });
+
+  // Load pharmacy status for current user
+  useEffect(() => {
+    const fetchPharmacyStatus = async () => {
+      if (!user) return;
+      try {
+        const docSnap = await getDoc(doc(db, 'pharmacies', user.uid));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.status === 'active') {
+            setRegistrationStatus('approved');
+          } else {
+            setRegistrationStatus('pending_approval');
+          }
+        } else {
+          setRegistrationStatus('needs_registration');
+        }
+      } catch (err) {
+        console.error(err);
+        setRegistrationStatus('needs_registration');
+      }
+    };
+    fetchPharmacyStatus();
+  }, [user]);
+
+  const handleRegistrationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'pharmacies', user.uid), {
+        id: user.uid,
+        ...regForm,
+        latitude: 26.08,
+        longitude: 43.98,
+        isVerified: false,
+        rating: 0,
+        responseRate: 0,
+        avgResponseTimeSec: 0,
+        status: 'pending', // Requires admin approval
+        createdAt: new Date().toISOString()
+      });
+      setRegistrationStatus('pending_approval');
+    } catch (err) {
+      alert('Error submitting registration');
+    }
+  };
+
+  const activePharmacy = pharmacies.find(p => p.id === user?.uid) || { ...regForm, id: user?.uid || 'temp' } as Pharmacy;
 
   // Response form states
   const [alternativeName, setAlternativeName] = useState('');
@@ -57,17 +121,85 @@ export default function PharmacyPortal({
   const [showAlternativeForm, setShowAlternativeForm] = useState(false);
   const [viewPrescriptionModal, setViewPrescriptionModal] = useState(false);
 
-  const activePharmacy = pharmacies.find(p => p.id === selectedPharmacyId) || pharmacies[0];
+  if (registrationStatus === 'loading') {
+    return <div className="p-8 text-center">{lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}</div>;
+  }
 
-  const getPharmacyDistance = (id: string) => {
-    const distances: Record<string, number> = {
-      'p-sina': 1.2,
-      'p-fahd': 2.5,
-      'p-nahdi': 3.1,
-      'p-kunooz': 4.8,
-      'p-care': 6.2
-    };
-    return distances[id] || 3.5;
+  if (registrationStatus === 'needs_registration') {
+    return (
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 className="text-xl font-bold mb-4">{lang === 'ar' ? 'تسجيل صيدلية جديدة' : 'Register New Pharmacy'}</h2>
+        <form onSubmit={handleRegistrationSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-1">{lang === 'ar' ? 'اسم الصيدلية (عربي)' : 'Pharmacy Name (AR)'}</label>
+              <input required type="text" className="w-full border p-2 rounded-lg" value={regForm.nameAr} onChange={e => setRegForm({...regForm, nameAr: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">{lang === 'ar' ? 'اسم الصيدلية (انجليزي)' : 'Pharmacy Name (EN)'}</label>
+              <input required type="text" className="w-full border p-2 rounded-lg" value={regForm.nameEn} onChange={e => setRegForm({...regForm, nameEn: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">{lang === 'ar' ? 'العنوان (عربي)' : 'Address (AR)'}</label>
+              <input required type="text" className="w-full border p-2 rounded-lg" value={regForm.addressAr} onChange={e => setRegForm({...regForm, addressAr: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">{lang === 'ar' ? 'العنوان (انجليزي)' : 'Address (EN)'}</label>
+              <input required type="text" className="w-full border p-2 rounded-lg" value={regForm.addressEn} onChange={e => setRegForm({...regForm, addressEn: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">{lang === 'ar' ? 'رقم الترخيص' : 'License Number'}</label>
+              <input required type="text" className="w-full border p-2 rounded-lg" value={regForm.licenseNumber} onChange={e => setRegForm({...regForm, licenseNumber: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">{lang === 'ar' ? 'مواعيد العمل' : 'Operating Hours'}</label>
+              <input required type="text" placeholder="e.g. 24/7 or 8 AM - 12 AM" className="w-full border p-2 rounded-lg" value={regForm.operatingHours} onChange={e => setRegForm({...regForm, operatingHours: e.target.value})} />
+            </div>
+          </div>
+          
+          <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer" onClick={() => {
+            setRegForm({...regForm, licenseImageUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=300'});
+            alert(lang === 'ar' ? 'تم محاكاة رفع الرخصة' : 'License upload simulated');
+          }}>
+            <Upload className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+            <p className="text-sm font-medium">{lang === 'ar' ? 'انقر لرفع صورة الترخيص' : 'Click to upload license image'}</p>
+            {regForm.licenseImageUrl && <p className="text-xs text-emerald-600 mt-2 font-semibold">✓ {lang === 'ar' ? 'تم الرفع' : 'Uploaded'}</p>}
+          </div>
+
+          <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition">
+            {lang === 'ar' ? 'إرسال طلب التسجيل' : 'Submit Registration Request'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (registrationStatus === 'pending_approval') {
+    return (
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+        <Clock className="mx-auto h-12 w-12 text-amber-500 mb-4" />
+        <h2 className="text-xl font-bold mb-2">{lang === 'ar' ? 'حسابك قيد المراجعة' : 'Account Under Review'}</h2>
+        <p className="text-slate-600">
+          {lang === 'ar' ? 'تم استلام طلب تسجيل الصيدلية بنجاح. يرجى الانتظار حتى يقوم مدير النظام بمراجعة واعتماد حسابك.' : 'Your pharmacy registration request has been received. Please wait for the system administrator to review and approve your account.'}
+        </p>
+      </div>
+    );
+  }
+
+  const getPharmacyDistance = (pharmacyId: string, requestLat?: number, requestLon?: number) => {
+    if (!activePharmacy || !requestLat || !requestLon) return 3.5;
+    
+    // Haversine distance formula
+    const R = 6371; // Earth's radius in km
+    const dLat = (requestLat - activePharmacy.latitude) * Math.PI / 180;
+    const dLon = (requestLon - activePharmacy.longitude) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(activePharmacy.latitude * Math.PI / 180) * Math.cos(requestLat * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    
+    return Number(distance.toFixed(1));
   };
 
   // Play simulated chime when notification arrives
@@ -186,28 +318,16 @@ export default function PharmacyPortal({
   return (
     <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
       
-      {/* Pharmacy Switcher Header */}
+      {/* Pharmacy Header */}
       <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div>
           <span className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-500 font-mono font-semibold uppercase tracking-wider">
             {lang === 'ar' ? 'منفذ الصيدلي' : 'PHARMACIST TERMINAL'}
           </span>
           <h2 className="text-base font-medium font-bold text-slate-600 mt-1">
-            {lang === 'ar' ? 'حدد الصيدلية للمحاكاة' : 'Switch Pharmacy Viewpoint'}
+            {lang === 'ar' ? activePharmacy.nameAr : activePharmacy.nameEn}
           </h2>
         </div>
-
-        <select
-          value={selectedPharmacyId}
-          onChange={(e) => setSelectedPharmacyId(e.target.value)}
-          className="bg-white border border-slate-200 text-base font-medium text-emerald-400 font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
-        >
-          {pharmacies.map(p => (
-            <option key={p.id} value={p.id}>
-              {lang === 'ar' ? p.nameAr : p.nameEn}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Selected Pharmacy Bio & License Status */}
@@ -280,7 +400,7 @@ export default function PharmacyPortal({
             </p>
             <p>
               <strong className="text-slate-500">{lang === 'ar' ? 'الموقع: ' : 'Distance: '}</strong>
-              <span>بعيد بمقدار {getPharmacyDistance(activePharmacy.id)} كم</span>
+              <span>بعيد بمقدار {getPharmacyDistance(activePharmacy.id, activeRequest?.latitude, activeRequest?.longitude)} كم</span>
             </p>
           </div>
 
@@ -351,7 +471,7 @@ export default function PharmacyPortal({
                   {activeRequest.productName}
                 </h4>
                 <p className="text-[10px] text-slate-500 mt-1">
-                  📍 العميل يقع على بعد {getPharmacyDistance(activePharmacy.id)} كم من موقعك
+                  📍 العميل يقع على بعد {getPharmacyDistance(activePharmacy.id, activeRequest.latitude, activeRequest.longitude)} كم من موقعك
                 </p>
               </div>
 
@@ -371,18 +491,18 @@ export default function PharmacyPortal({
               </div>
             )}
 
-            {activeRequest.prescriptionImage && (
+            {activeRequest.prescriptionImages && activeRequest.prescriptionImages.length > 0 && (
               <div className="flex items-center justify-between bg-white p-3 border border-slate-200/60 rounded-xl">
                 <div className="flex items-center gap-2 text-base font-medium">
                   <FileImage className="w-4 h-4 text-emerald-400" />
-                  <span>{lang === 'ar' ? 'صورة الوصفة الطبية مرفقة' : 'Prescription Image Attached'}</span>
+                  <span>{lang === 'ar' ? `مرفق ${activeRequest.prescriptionImages.length} صور للوصفة` : `${activeRequest.prescriptionImages.length} Prescription Images Attached`}</span>
                 </div>
                 <button
                   onClick={() => setViewPrescriptionModal(true)}
                   className="bg-slate-50 hover:bg-slate-100 text-base font-medium px-2.5 py-1.5 rounded-lg text-slate-600 flex items-center gap-1 border border-slate-200 transition"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  {lang === 'ar' ? 'عرض الوصفة' : 'View Image'}
+                  {lang === 'ar' ? 'عرض الوصفة' : 'View Images'}
                 </button>
               </div>
             )}
@@ -542,16 +662,17 @@ export default function PharmacyPortal({
               </button>
             </div>
             
-            <div className="rounded-xl overflow-hidden bg-white border border-slate-200 p-2 text-center relative">
-              <img
-                src={activeRequest?.prescriptionImage || ''}
-                alt="Rx prescription"
-                referrerPolicy="no-referrer"
-                className="w-full h-64 object-contain"
-              />
-              <div className="absolute top-2 right-2 bg-white text-[9px] text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20">
-                SIMULATED Rx
-              </div>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto p-2">
+              {activeRequest?.prescriptionImages?.map((imgUrl, idx) => (
+                <div key={idx} className="rounded-xl overflow-hidden bg-white border border-slate-200 p-2 text-center relative">
+                  <img
+                    src={imgUrl}
+                    alt={`Rx prescription ${idx + 1}`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
+              ))}
             </div>
 
             <div className="text-center">

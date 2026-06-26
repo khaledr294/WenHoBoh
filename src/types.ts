@@ -38,7 +38,7 @@ export interface CustomerRequest {
   latitude: number;
   longitude: number;
   radiusKm: number;
-  prescriptionImage: string | null;
+  prescriptionImages?: string[];
   notes: string | null;
   acceptsAlternative: boolean;
   status: 'active' | 'fulfilled' | 'expired' | 'cancelled';

@@ -49,64 +49,41 @@ export default function AdminPortal({
   onClearDatabase,
 }: AdminPortalProps) {
   // Pending verification list
-  const [pendingList, setPendingList] = useState<PendingPharmacy[]>([
-    {
-      id: 'p-jazira',
-      nameAr: 'صيدلية الجزيرة الفرعية',
-      nameEn: 'Al Jazira Branch Pharmacy',
-      crNumber: '1131054321',
-      licenseNumber: 'MoH-99221-A',
-      addressAr: 'حي الشفا، طريق الشبيلي، عنيزة',
-      addressEn: 'Al Shifa, Al Shubeili Rd, Unaizah'
-    },
-    {
-      id: 'p-nafees',
-      nameAr: 'صيدلية ابن النفيس لتركيب الأدوية',
-      nameEn: 'Ibn Al-Nafees Compound Pharmacy',
-      crNumber: '1131068841',
-      licenseNumber: 'MoH-77443-C',
-      addressAr: 'حي المروج، طريق الملك عبدالعزيز، عنيزة',
-      addressEn: 'Al Murooj, King Abdulaziz Rd, Unaizah'
-    }
-  ]);
+  const pendingList = pharmacies.filter(p => p.status === 'pending');
 
   // Handle Approve Licensing
-  const handleApprovePharmacy = (pending: PendingPharmacy) => {
-    const newPharmacy: Pharmacy = {
-      id: pending.id,
-      nameAr: pending.nameAr,
-      nameEn: pending.nameEn,
-      addressAr: pending.addressAr,
-      addressEn: pending.addressEn,
-      latitude: 26.085 + (Math.random() - 0.5) * 0.03, // Place slightly around center
-      longitude: 43.990 + (Math.random() - 0.5) * 0.03,
-      isVerified: true,
-      licenseNumber: pending.licenseNumber,
-      rating: 4.8,
-      responseRate: 100,
-      avgResponseTimeSec: 120,
-      status: 'active'
-    };
-
-    setPharmacies(prev => [...prev, newPharmacy]);
-    setPendingList(prev => prev.filter(p => p.id !== pending.id));
-
-    onLogEvent(
-      'verification_approved',
-      `وافق المسؤول على ترخيص صيدلية ${pending.nameAr} بعد التحقق من سجل وزارة الصحة`,
-      `Admin approved licensing for ${pending.nameEn} after verifying Ministry of Health database`
-    );
+  const handleApprovePharmacy = async (pending: Pharmacy) => {
+    try {
+      const { doc, updateDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      await updateDoc(doc(db, 'pharmacies', pending.id), {
+        status: 'active',
+        isVerified: true
+      });
+      onLogEvent(
+        'verification_approved',
+        `وافق المسؤول على ترخيص صيدلية ${pending.nameAr} بعد التحقق من سجل وزارة الصحة`,
+        `Admin approved licensing for ${pending.nameEn} after verifying Ministry of Health database`
+      );
+    } catch (e) {
+      alert('Error approving pharmacy');
+    }
   };
 
   // Reject licensing
-  const handleRejectPharmacy = (pending: PendingPharmacy) => {
-    setPendingList(prev => prev.filter(p => p.id !== pending.id));
-
-    onLogEvent(
-      'abuse_warning',
-      `تم رفض ترخيص صيدلية ${pending.nameAr} لعدم كفاية الوثائق المقدمة`,
-      `Admin rejected licensing for ${pending.nameEn} due to insufficient documentation`
-    );
+  const handleRejectPharmacy = async (pending: Pharmacy) => {
+    try {
+      const { doc, deleteDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      await deleteDoc(doc(db, 'pharmacies', pending.id));
+      onLogEvent(
+        'abuse_warning',
+        `تم رفض ترخيص صيدلية ${pending.nameAr} لعدم كفاية الوثائق المقدمة`,
+        `Admin rejected licensing for ${pending.nameEn} due to insufficient documentation`
+      );
+    } catch (e) {
+      alert('Error rejecting pharmacy');
+    }
   };
 
   // Stats calculation
@@ -204,10 +181,6 @@ export default function AdminPortal({
                 </div>
 
                 <div className="flex flex-wrap gap-4 text-xs justify-between bg-white p-2.5 rounded-xl border border-slate-200/40">
-                  <div>
-                    <span className="text-[9px] text-slate-500 uppercase font-mono block">COMMERCIAL REG. (CR)</span>
-                    <span className="font-mono text-slate-700 font-semibold">{pending.crNumber}</span>
-                  </div>
                   <div>
                     <span className="text-[9px] text-slate-500 uppercase font-mono block">MOH LICENSE</span>
                     <span className="font-mono text-slate-700 font-semibold">{pending.licenseNumber}</span>

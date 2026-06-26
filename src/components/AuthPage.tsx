@@ -169,7 +169,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
 
   const roleLabels = {
     customer: lang === 'ar' ? 'عميل' : 'Customer',
-    pharmacy: lang === 'ar' ? 'صيدلي' : 'Pharmacist',
+    pharmacy: lang === 'ar' ? 'صيدلية' : 'Pharmacy',
     admin: lang === 'ar' ? 'مسؤول' : 'Admin'
   };
 

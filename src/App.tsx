@@ -382,31 +382,17 @@ export default function App() {
 
         <Route path="pharmacy" element={
           <ProtectedRoute role="pharmacy">
-            <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
-              <div className="lg:col-span-5 space-y-6">
-                <InteractiveMap 
-                  pharmacies={pharmacies}
-                  customerCoords={customerCoords}
-                  onCustomerCoordsChange={setCustomerCoords}
-                  activeRequest={activeRequest}
-                  activeReservation={activeReservation}
-                  selectedPharmacyId={activeReservation ? activeReservation.pharmacyId : null}
-                  lang={lang}
-                />
-                
-              </div>
-              <div className="lg:col-span-7">
-                <PharmacyPortal 
-                  pharmacies={pharmacies}
-                  activeRequest={activeRequest}
-                  responses={responses}
-                  addResponse={addResponse}
-                  activeReservation={activeReservation}
-                  setActiveReservation={handleSetActiveReservation}
-                  lang={lang}
-                  onLogEvent={handleLogEvent}
-                />
-              </div>
+            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 animate-fade-in">
+              <PharmacyPortal 
+                pharmacies={pharmacies}
+                activeRequest={activeRequest}
+                responses={responses}
+                addResponse={addResponse}
+                activeReservation={activeReservation}
+                setActiveReservation={handleSetActiveReservation}
+                lang={lang}
+                onLogEvent={handleLogEvent}
+              />
             </main>
           </ProtectedRoute>
         } />

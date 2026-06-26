@@ -101,8 +101,7 @@ export default function CustomerPortal({
   const [category, setCategory] = useState<ProductCategory>('otc');
   const [radiusKm, setRadiusKm] = useState(3);
   const [notes, setNotes] = useState('');
-  const [prescriptionAttached, setPrescriptionAttached] = useState(false);
-  const [prescriptionUrl, setPrescriptionUrl] = useState<string | null>(null);
+  const [prescriptionImages, setPrescriptionImages] = useState<string[]>([]);
   const [acceptsAlternative, setAcceptsAlternative] = useState(true);
 
   // Demo helper states
@@ -173,7 +172,7 @@ export default function CustomerPortal({
       latitude: 26.085, // Unaizah center
       longitude: 43.990,
       radiusKm,
-      prescriptionImage: prescriptionUrl,
+      prescriptionImages,
       notes: notes.trim() || null,
       acceptsAlternative,
       status: 'active',
@@ -611,26 +610,6 @@ export default function CustomerPortal({
       {/* Main Form (Hidden if there's an active request awaiting results) */}
       {!activeRequest ? (
         <form onSubmit={handleBroadcast} className="space-y-4">
-          <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-base font-medium font-bold text-slate-600">
-                {lang === 'ar' ? '💡 تعبئة سريعة للتجربة' : '💡 Demo Quick-Fill Presets'}
-              </span>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {PRESET_PRODUCTS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectPreset(preset)}
-                  className="text-[10px] md:text-base font-medium bg-white hover:bg-slate-850 hover:border-emerald-500/50 border border-slate-200 text-slate-600 px-2.5 py-1.5 rounded-lg transition active:scale-95"
-                >
-                  {lang === 'ar' ? preset.nameAr : preset.nameEn}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div>
             <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
               {lang === 'ar' ? 'اسم الدواء أو المنتج المطلوب' : 'Product Name / Description'}
@@ -648,26 +627,7 @@ export default function CustomerPortal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-1.5 font-mono">
-                {lang === 'ar' ? 'الفئة الطبية' : 'Category'}
-              </label>
-              <select
-                value={category}
-                onChange={e => setCategory(e.target.value as ProductCategory)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 transition"
-              >
-                <option value="otc">{lang === 'ar' ? 'لا وصفة (OTC)' : 'Over the Counter'}</option>
-                <option value="rx">{lang === 'ar' ? 'بوصفة طبيب (Rx)' : 'Prescription'}</option>
-                <option value="baby">{lang === 'ar' ? 'عناية بالطفل' : 'Baby Care'}</option>
-                <option value="cosmetics">{lang === 'ar' ? 'مستحضرات تجميل' : 'Cosmetics'}</option>
-                <option value="supplements">{lang === 'ar' ? 'مكملات غذائية' : 'Supplements'}</option>
-                <option value="devices">{lang === 'ar' ? 'أجهزة طبية' : 'Medical Devices'}</option>
-                <option value="other">{lang === 'ar' ? 'أخرى' : 'Other'}</option>
-              </select>
-            </div>
-
+          <div className="grid gap-3">
             <div>
               <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-1.5 font-mono">
                 {lang === 'ar' ? 'نطاق البحث الجغرافي' : 'Search Radius'}
@@ -689,50 +649,74 @@ export default function CustomerPortal({
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-base font-medium font-semibold text-slate-900">
-                {lang === 'ar' ? 'صورة الوصفة الطبية (Rx)' : 'Prescription Photo (Rx)'}
+                {lang === 'ar' ? 'صورة الأصناف المطلوبة' : 'Prescription Photo (Rx)'}
               </span>
               <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
-                {lang === 'ar' ? 'موصى به للأدوية المقيدة' : 'Recommended for Rx'}
+                {lang === 'ar' ? 'الوصفة الطبية (Rx) موصى به للأدوية المقيدة' : 'Recommended for Rx'}
               </span>
             </div>
 
-            {!prescriptionAttached ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setPrescriptionAttached(true);
-                  setPrescriptionUrl('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=300&auto=format&fit=crop');
-                  onLogEvent(
-                    'request_created',
-                    `أرفق العميل صورة وصفة طبية لطلب الدواء`,
-                    `Customer attached a prescription image for the medication`
-                  );
-                }}
-                className="w-full border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-xl py-4 flex flex-col items-center justify-center gap-1.5 transition group"
-              >
-                <UploadCloud className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
-                <span className="text-[10px] text-slate-500">
-                  {lang === 'ar' ? 'انقر لمحاكاة إرفاق صورة الوصفة' : 'Click to simulate prescription upload'}
-                </span>
-              </button>
-            ) : (
-              <div className="flex items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
-                  <span className="text-base font-medium font-mono text-slate-600">Prescription_Mock.jpg</span>
+            <div className="space-y-3">
+              {prescriptionImages.length < 3 && (
+                <label className="w-full border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-xl py-4 flex flex-col items-center justify-center gap-1.5 transition group cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+                      
+                      const remainingSlots = 3 - prescriptionImages.length;
+                      const filesToProcess = files.slice(0, remainingSlots);
+                      
+                      filesToProcess.forEach(file => {
+                        if (file.size > 2 * 1024 * 1024) {
+                          alert(lang === 'ar' ? 'حجم الصورة يجب أن لا يتجاوز ٢ ميغابايت' : 'Image size must not exceed 2MB');
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setPrescriptionImages(prev => [...prev, reader.result as string]);
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                      
+                      onLogEvent(
+                        'prescription_uploaded',
+                        `أرفق العميل ${filesToProcess.length} صورة وصفة طبية`,
+                        `Customer attached ${filesToProcess.length} prescription image(s)`
+                      );
+                    }}
+                  />
+                  <UploadCloud className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                  <span className="text-[10px] text-slate-500 text-center px-4">
+                    {lang === 'ar' ? 'انقر لإرفاق صورة الوصفة (الحد الأقصى ٣ صور)' : 'Click to upload prescription (Max 3 images)'}
+                  </span>
+                </label>
+              )}
+
+              {prescriptionImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {prescriptionImages.map((imgUrl, idx) => (
+                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square">
+                      <img src={imgUrl} alt={`Prescription ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setPrescriptionImages(prev => prev.filter((_, i) => i !== idx))}
+                        className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        title={lang === 'ar' ? 'إزالة' : 'Remove'}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPrescriptionAttached(false);
-                    setPrescriptionUrl(null);
-                  }}
-                  className="text-[10px] text-red-400 hover:underline"
-                >
-                  {lang === 'ar' ? 'إزالة' : 'Remove'}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           <div>
