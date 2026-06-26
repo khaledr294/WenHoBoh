@@ -141,7 +141,11 @@ export default function App() {
   // Customer Coordinates (Stateful so map interactions can shift customer location)
   const [customerCoords, setCustomerCoords] = useState<{ lat: number; lng: number }>(() => {
     const saved = localStorage.getItem('wenhoboh_customerCoords');
-    return saved ? JSON.parse(saved) : { lat: 26.085, lng: 43.990 };
+    try {
+      return saved ? JSON.parse(saved) : { lat: 26.085, lng: 43.990 };
+    } catch {
+      return { lat: 26.085, lng: 43.990 };
+    }
   });
 
   // Global State (Synchronized with Firestore in real-time)
@@ -154,7 +158,11 @@ export default function App() {
   // User Profile
   const [user, setUser] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('wenhoboh_user');
-    return saved ? JSON.parse(saved) : { phone: '', name: '', isRegistered: false };
+    try {
+      return saved ? JSON.parse(saved) : { phone: '', name: '', isRegistered: false };
+    } catch {
+      return { phone: '', name: '', isRegistered: false };
+    }
   });
 
   // Set up Firestore Listeners on Mount
@@ -233,10 +241,10 @@ export default function App() {
   };
 
   // Helper logger for system event panel (Saves to Firestore!)
-  const handleLogEvent = (type: any, msgAr: string, msgEn: string) => {
+  const handleLogEvent = (type: SystemEvent['type'], msgAr: string, msgEn: string) => {
     const newEvent: SystemEvent = {
-      id: Math.random().toString(36).substr(2, 5),
-      timestamp: new Date().toLocaleTimeString(),
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
       type,
       messageAr: msgAr,
       messageEn: msgEn
@@ -262,9 +270,9 @@ export default function App() {
         await addOrUpdatePharmacy(p);
       }
       
-      const clearTime = new Date().toLocaleTimeString();
+      const clearTime = new Date().toISOString();
       const cleanEvent: SystemEvent = {
-        id: Math.random().toString(36).substr(2, 5),
+        id: crypto.randomUUID(),
         timestamp: clearTime,
         type: 'verification_approved',
         messageAr: 'تم مسح قاعدة البيانات بنجاح من جميع بيانات التجارب السابقة والبدء بسجل حقيقي معتمد صيدلانياً.',
@@ -319,7 +327,7 @@ export default function App() {
     }
   };
 
-  const handleSetPharmacies = (updater: any) => {
+  const handleSetPharmacies = (updater: React.SetStateAction<Pharmacy[]>) => {
     if (typeof updater === 'function') {
       const newList = updater(pharmacies);
       newList.forEach((p: Pharmacy) => {

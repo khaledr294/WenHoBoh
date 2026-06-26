@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, limit, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, limit, addDoc, writeBatch } from 'firebase/firestore';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Pharmacy, CustomerRequest, PharmacyResponse, Reservation, SystemEvent } from '../types';
@@ -229,12 +229,23 @@ export async function addSystemEvent(event: SystemEvent) {
 // 4. Clear/Wipe Firestore Data for Production Clean Slate
 export async function wipeFirestoreData() {
   try {
-    // We fetch and delete all documents in collections for the reset action
     const colNames = ['pharmacies', 'customerRequests', 'pharmacyResponses', 'reservations', 'systemEvents'];
     for (const colName of colNames) {
       const snap = await getDocs(collection(db, colName));
+      // Delete in batches of 500
+      let b = writeBatch(db);
+      let count = 0;
       for (const docSnap of snap.docs) {
-        await deleteDoc(doc(db, colName, docSnap.id));
+        b.delete(docSnap.ref);
+        count++;
+        if (count === 500) {
+          await b.commit();
+          b = writeBatch(db);
+          count = 0;
+        }
+      }
+      if (count > 0) {
+        await b.commit();
       }
     }
   } catch (error) {

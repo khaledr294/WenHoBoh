@@ -73,7 +73,7 @@ export interface Reservation {
 export interface SystemEvent {
   id: string;
   timestamp: string;
-  type: 'request_created' | 'response_sent' | 'reservation_created' | 'reservation_completed' | 'verification_approved' | 'abuse_warning';
+  type: 'request_created' | 'response_sent' | 'reservation_created' | 'reservation_completed' | 'verification_approved' | 'abuse_warning' | 'prescription_uploaded';
   messageAr: string;
   messageEn: string;
 }

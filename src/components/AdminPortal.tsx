@@ -26,7 +26,7 @@ interface AdminPortalProps {
   setPharmacies: React.Dispatch<React.SetStateAction<Pharmacy[]>>;
   events: SystemEvent[];
   lang: Language;
-  onLogEvent: (type: any, msgAr: string, msgEn: string) => void;
+  onLogEvent: (type: SystemEvent['type'], msgAr: string, msgEn: string) => void;
   onClearDatabase?: () => void;
 }
 

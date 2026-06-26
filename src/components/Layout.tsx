@@ -4,7 +4,7 @@ import { Language } from '../types';
 import { Globe, LogOut, Bot, Heart, Building2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
-export default function Layout({ lang, setLang }: any) {
+export default function Layout({ lang, setLang }: { lang: Language, setLang: (lang: Language) => void }) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [secretClicks, setSecretClicks] = React.useState(0);

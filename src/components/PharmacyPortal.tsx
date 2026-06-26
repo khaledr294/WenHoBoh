@@ -238,14 +238,14 @@ export default function PharmacyPortal({
     const responsePrice = priceInput ? parseFloat(priceInput) : undefined;
 
     const newResponse: PharmacyResponse = {
-      id: 'resp-' + Math.random().toString(36).substr(2, 5),
+      id: 'resp-' + crypto.randomUUID().substring(0, 8),
       requestId: activeRequest.id,
       pharmacyId: activePharmacy.id,
       status,
       alternativeName: status === 'alternative' ? alternativeName : undefined,
       price: responsePrice,
       notes: notesInput.trim() || undefined,
-      respondedAt: new Date().toLocaleTimeString()
+      respondedAt: new Date().toISOString()
     };
 
     addResponse(newResponse);

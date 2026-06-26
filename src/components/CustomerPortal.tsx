@@ -222,11 +222,9 @@ export default function CustomerPortal({
     setCategory(preset.category);
     setNotes(preset.notes);
     if (preset.category === 'rx') {
-      setPrescriptionAttached(true);
-      setPrescriptionUrl('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=300&auto=format&fit=crop');
+      setPrescriptionImages(['https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=300&auto=format&fit=crop']);
     } else {
-      setPrescriptionAttached(false);
-      setPrescriptionUrl(null);
+      setPrescriptionImages([]);
     }
   };
 
@@ -239,7 +237,7 @@ export default function CustomerPortal({
     setBroadcastProgress(0);
 
     const newRequest: CustomerRequest = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       productName: productName.trim(),
       category,
       latitude: 26.085, // Unaizah center
@@ -249,8 +247,8 @@ export default function CustomerPortal({
       notes: notes.trim() || null,
       acceptsAlternative,
       status: 'active',
-      createdAt: new Date().toLocaleTimeString(),
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000).toLocaleTimeString(),
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     };
 
     setActiveRequest(newRequest);
@@ -326,14 +324,14 @@ export default function CustomerPortal({
     if (!activeRequest) return;
     
     const newReservation: Reservation = {
-      id: 'res-' + Math.random().toString(36).substr(2, 5),
+      id: 'res-' + crypto.randomUUID().substring(0, 8),
       requestId: activeRequest.id,
       responseId: response.id,
       customerPhone: user.phone,
       pharmacyId: response.pharmacyId,
       status: 'active',
-      reservedAt: new Date().toLocaleTimeString(),
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toLocaleTimeString()
+      reservedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString()
     };
 
     setActiveReservation(newReservation);
