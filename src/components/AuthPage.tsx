@@ -20,7 +20,6 @@ interface AuthPageProps {
 
 export default function AuthPage({ role, lang }: AuthPageProps) {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
@@ -28,6 +27,9 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  
+  const [needsRegistration, setNeedsRegistration] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState<any>(null);
 
   useEffect(() => {
     // Initialize recaptcha when component mounts
@@ -108,39 +110,20 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
     try {
       const user = await verifySmsOtp(confirmationResult, otp);
       
-      // If this is a registration, update profile and create initial documents
-      if (!isLogin) {
-        if (name) {
-          await updateProfile(user, { displayName: name });
-        }
-        
-        // Setup initial documents
-        if (role === 'customer') {
-          await setDoc(doc(db, 'customers', user.uid), {
-            id: user.uid,
-            name,
-            phone: formatPhoneNumber(phone),
-            createdAt: new Date().toISOString()
-          });
-        }
-      } else {
-        // Just verify if document exists for login, if not we might need to create a basic one or handle it
-        const docRef = doc(db, role === 'pharmacy' ? 'pharmacies' : role === 'admin' ? 'admins' : 'customers', user.uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists() && role === 'customer') {
-          // Auto-create customer doc if missing during phone login
-          await setDoc(doc(db, 'customers', user.uid), {
-            id: user.uid,
-            name: user.displayName || 'User',
-            phone: user.phoneNumber || formatPhoneNumber(phone),
-            createdAt: new Date().toISOString()
-          });
-        }
+      const docRef = doc(db, role === 'pharmacy' ? 'pharmacies' : role === 'admin' ? 'admins' : 'customers', user.uid);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists() && role !== 'admin') {
+        setRegisteredUser(user);
+        setNeedsRegistration(true);
+        setLoading(false);
+        return;
       }
       
-      navigate(`/${role === 'admin' ? 'system-admin-portal' : role === 'pharmacy' ? 'partner-pharmacy-login' : role}`);
-      // Actually navigate to the dashboard root for role:
+      if (role === 'admin' && !docSnap.exists()) {
+        await setDoc(docRef, { id: user.uid, role: 'admin' });
+      }
+      
       if (role === 'admin') navigate('/admin');
       else if (role === 'pharmacy') navigate('/pharmacy');
       else navigate('/customer');
@@ -153,6 +136,51 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       } else {
         setError(lang === 'ar' ? `حدث خطأ أثناء التحقق من الرمز: ${err.message}` : `Error verifying code: ${err.message}`);
       }
+      setLoading(false);
+    }
+  };
+
+  const handleRegistrationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!registeredUser) return;
+    
+    setError('');
+    setLoading(true);
+    
+    try {
+      if (name) {
+        await updateProfile(registeredUser, { displayName: name });
+      }
+      
+      if (role === 'customer') {
+        await setDoc(doc(db, 'customers', registeredUser.uid), {
+          id: registeredUser.uid,
+          name,
+          phone: formatPhoneNumber(phone),
+          createdAt: new Date().toISOString()
+        });
+        navigate('/customer');
+      } else if (role === 'pharmacy') {
+        const newPharmacy: Pharmacy = {
+          id: registeredUser.uid,
+          nameAr: name,
+          nameEn: name,
+          addressAr: 'عنيزة',
+          addressEn: 'Unaizah',
+          latitude: 26.085,
+          longitude: 43.990,
+          isVerified: false,
+          licenseNumber: license,
+          rating: 5,
+          responseRate: 100,
+          avgResponseTimeSec: 60,
+          status: 'pending'
+        };
+        await setDoc(doc(db, 'pharmacies', registeredUser.uid), newPharmacy);
+        navigate('/pharmacy');
+      }
+    } catch (err: any) {
+      setError(lang === 'ar' ? `حدث خطأ أثناء التسجيل: ${err.message}` : `Error during registration: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -175,10 +203,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
             {role === 'admin' && <ShieldCheck className="w-8 h-8 text-emerald-600" />}
           </div>
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-            {isLogin 
-              ? (lang === 'ar' ? `دخول ${roleLabels[role]}` : `Login as ${roleLabels[role]}`)
-              : (lang === 'ar' ? `تسجيل ${roleLabels[role]}` : `Register as ${roleLabels[role]}`)
-            }
+            {lang === 'ar' ? `دخول ${roleLabels[role]}` : `Login as ${roleLabels[role]}`}
           </h2>
           <p className="text-slate-500 text-base font-medium">
             {lang === 'ar' ? 'نظام وينهوبه - عنيزة' : 'Wenhoboh System - Unaizah'}
@@ -193,44 +218,59 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
 
         <div id="recaptcha-container"></div>
 
-        {!confirmationResult ? (
-          <form onSubmit={handleSendOtp} className="space-y-5">
-            {!isLogin && role !== 'pharmacy' && (
-              <div className="space-y-5">
+        {needsRegistration ? (
+          <form onSubmit={handleRegistrationSubmit} className="space-y-5">
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
+                  {lang === 'ar' ? 'الاسم بالكامل' : 'Full Name'}
+                </label>
+                <div className="relative">
+                  <User className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    required
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
+                    placeholder={lang === 'ar' ? 'اكتب اسمك هنا...' : 'Enter your name...'}
+                  />
+                </div>
+              </div>
+
+              {role === 'pharmacy' && (
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
-                    {lang === 'ar' ? 'الاسم بالكامل' : 'Full Name'}
+                    {lang === 'ar' ? 'رقم الترخيص' : 'License Number'}
                   </label>
-                  <div className="relative">
-                    <User className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                      required
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
-                      placeholder={lang === 'ar' ? 'اكتب اسمك هنا...' : 'Enter your name...'}
-                    />
-                  </div>
+                  <input
+                    required
+                    type="text"
+                    value={license}
+                    onChange={(e) => setLicense(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
+                  />
                 </div>
+              )}
+            </div>
 
-                {role === 'pharmacy' && (
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
-                      {lang === 'ar' ? 'رقم الترخيص' : 'License Number'}
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      value={license}
-                      onChange={(e) => setLicense(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl py-4 mt-8 text-lg transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-3 disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              {loading ? (
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  {lang === 'ar' ? 'إكمال التسجيل' : 'Complete Registration'}
+                  <CheckCircle2 className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </form>
+        ) : !confirmationResult ? (
+          <form onSubmit={handleSendOtp} className="space-y-5">
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
                 {lang === 'ar' ? 'رقم الجوال' : 'Phone Number'}
@@ -311,20 +351,6 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
               {lang === 'ar' ? 'تغيير رقم الجوال؟' : 'Change Phone Number?'}
             </button>
           </form>
-        )}
-
-        {!confirmationResult && (
-          <div className="mt-8 pt-6 border-t-2 border-slate-100 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm font-bold text-emerald-600 hover:text-emerald-500 transition-colors"
-            >
-              {isLogin 
-                ? (lang === 'ar' ? 'مستخدم جديد؟ اضغط هنا للتسجيل' : 'New user? Click here to register')
-                : (lang === 'ar' ? 'لديك حساب بالفعل؟ تسجيل الدخول' : 'Already have an account? Login here')
-              }
-            </button>
-          </div>
         )}
       </div>
     </div>
