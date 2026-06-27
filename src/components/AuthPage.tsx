@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../lib/firebase';
-import { updateProfile, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
+import { updateProfile, RecaptchaVerifier, ConfirmationResult, User as FirebaseAuthUser } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { Pharmacy, Language } from '../types';
 import { Phone, User, Building2, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   
   const [needsRegistration, setNeedsRegistration] = useState(false);
-  const [registeredUser, setRegisteredUser] = useState<User | null>(null);
+  const [registeredUser, setRegisteredUser] = useState<FirebaseAuthUser | null>(null);
 
   useEffect(() => {
     // Initialize recaptcha when component mounts
@@ -64,7 +64,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
     try {
       const formattedPhone = formatPhoneNumber(phone);
       
-      const adminPhone = import.meta.env.VITE_ADMIN_PHONE || '+966501511643';
+      const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE || '+966501511643';
       // Admin phone restriction
       if (role === 'admin' && formattedPhone !== adminPhone) {
         setError(lang === 'ar' ? 'غير مصرح لك بالدخول كمسؤول' : 'Unauthorized to login as admin');
@@ -122,7 +122,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       }
       
       if (role === 'admin') {
-        const adminPhone = import.meta.env.VITE_ADMIN_PHONE || '+966501511643';
+        const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE || '+966501511643';
         if (user.phoneNumber !== adminPhone) {
           throw new Error('رقم الجوال هذا غير مصرح له بالدخول كمسؤول');
         }

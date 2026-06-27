@@ -7,58 +7,51 @@ service cloud.firestore {
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Global Safety Net
-    match /{document=**} {
-      allow read, write: if isAdmin();
-    }
-
     // Admins Collection
     match /admins/{adminId} {
-      allow read: if request.auth != null && request.auth.uid == adminId;
-      allow write: if request.auth != null && request.auth.uid == adminId;
+      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == adminId);
     }
 
     // Pharmacies Collection
     match /pharmacies/{pharmacyId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == pharmacyId;
+      allow read: if request.auth != null || isAdmin();
+      allow write: if (request.auth != null && request.auth.uid == pharmacyId) || isAdmin();
     }
 
     // Customers Collection
     match /customers/{customerId} {
-      allow read: if request.auth != null && request.auth.uid == customerId;
-      allow write: if request.auth != null && request.auth.uid == customerId;
+      allow read, write: if (request.auth != null && request.auth.uid == customerId) || isAdmin();
     }
 
     // CustomerRequests Collection
     match /customerRequests/{requestId} {
-      allow read: if true;
+      allow read: if request.auth != null || isAdmin();
       allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if false;
+      allow update: if (request.auth != null && request.auth.uid == resource.data.customerId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     // PharmacyResponses Collection
     match /pharmacyResponses/{responseId} {
-      allow read: if true;
+      allow read: if request.auth != null || isAdmin();
       allow create: if request.auth != null;
-      allow update: if request.auth != null && request.auth.uid == resource.data.pharmacyId;
-      allow delete: if false;
+      allow update: if (request.auth != null && request.auth.uid == resource.data.pharmacyId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     // Reservations Collection
     match /reservations/{reservationId} {
-      allow read: if true;
+      allow read: if request.auth != null || isAdmin();
       allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if false;
+      allow update: if (request.auth != null && request.auth.uid == resource.data.customerId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     // SystemEvents Collection
     match /systemEvents/{eventId} {
-      allow read: if true;
-      allow create: if true; // Open temporarily for logging
-      allow update, delete: if false;
+      allow read: if request.auth != null || isAdmin();
+      allow create: if request.auth != null || isAdmin();
+      allow update, delete: if isAdmin();
     }
   }
 }

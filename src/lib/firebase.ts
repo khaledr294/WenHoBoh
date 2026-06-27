@@ -7,9 +7,6 @@ import { Pharmacy, CustomerRequest, PharmacyResponse, Reservation, SystemEvent }
 // Safely handle potential ESM/CJS bundler wrapping on JSON imports
 const config = (firebaseConfig as any).default || firebaseConfig;
 
-console.log("Initializing Firebase with project:", config.projectId);
-console.log("Using Firestore Database ID:", config.firestoreDatabaseId);
-
 const app = initializeApp(config);
 export const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence).catch(console.error);
@@ -70,7 +67,7 @@ import { getDocFromServer } from 'firebase/firestore';
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'systemEvents', 'connection_test'));
-    console.log("Firebase/Firestore Connection established successfully! Database ID:", config.firestoreDatabaseId);
+    // Connection established successfully
   } catch (error) {
     console.error("Firebase/Firestore Connection test failed! Error details:", error);
   }

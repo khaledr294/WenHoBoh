@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children, role }: { children: React.Rea
     return <Navigate to={`/auth/${role}`} replace />;
   }
 
-  const adminPhone = import.meta.env.VITE_ADMIN_PHONE || '+966501511643';
+  const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE || '+966501511643';
   if (role === 'admin' && user.phoneNumber !== adminPhone) {
     return <Navigate to={`/system-admin-portal`} replace />;
   }

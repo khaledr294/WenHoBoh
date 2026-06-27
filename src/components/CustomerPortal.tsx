@@ -12,7 +12,8 @@ import {
   Reservation, 
   UserProfile, 
   ProductCategory,
-  Language
+  Language,
+  SystemEvent
 } from '../types';
 import { 
   Phone, 
@@ -45,7 +46,7 @@ interface CustomerPortalProps {
   activeReservation: Reservation | null;
   setActiveReservation: (res: Reservation | null) => void;
   lang: Language;
-  onLogEvent: (type: any, msgAr: string, msgEn: string) => void;
+  onLogEvent: (type: SystemEvent['type'], msgAr: string, msgEn: string) => void;
   customerCoords?: { lat: number; lng: number };
 }
 
@@ -66,6 +67,8 @@ const PRESET_PRODUCTS = [
   { nameAr: 'واقي شمس يوسيرين 50+', nameEn: 'Eucerin Sunscreen Gel-Cream SPF50+', category: 'cosmetics' as const, notes: 'للبشرة الدهنية' },
   { nameAr: 'فيتامين سي ١٠٠٠ مجم فوار', nameEn: 'Vitamin C 1000mg Effervescent', category: 'supplements' as const, notes: 'علبة بنكهة البرتقال' },
 ];
+
+import { getPharmacyName as getPharmacyNameUtil } from '../lib/utils';
 
 export default function CustomerPortal({
   pharmacies,
@@ -137,7 +140,7 @@ export default function CustomerPortal({
       titleEn: 'Welcome to Wenhoboh',
       bodyAr: 'تطبيقك لاكتشاف الأدوية في عنيزة جاهز.',
       bodyEn: 'Your app for discovering medicine in Unaizah is ready.',
-      time: new Date().toLocaleTimeString(),
+      time: new Date().toISOString(),
       read: false
     }
   ]);
@@ -153,14 +156,13 @@ export default function CustomerPortal({
         titleEn: 'Order Update',
         bodyAr: `تم تحديث حالة حجزك إلى: ${activeReservation.status === 'active' ? 'مؤكد' : activeReservation.status === 'completed' ? 'مكتمل' : 'ملغي/منتهي'}`,
         bodyEn: `Your reservation status is now: ${activeReservation.status}`,
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toISOString(),
         read: false
       };
       setNotifications(prev => [newNotif, ...prev]);
-      if (activeTab !== 'notifications') {
-        setToastNotif(newNotif);
-        setTimeout(() => setToastNotif(null), 5000);
-      }
+      // Toast notification
+      setToastNotif(newNotif);
+      setTimeout(() => setToastNotif(null), 5000);
     }
   }, [activeReservation?.status]);
 
@@ -175,23 +177,21 @@ export default function CustomerPortal({
           titleEn: 'Product Found!',
           bodyAr: `قامت صيدلية جديدة بالرد على طلبك "${activeRequest.productName}".`,
           bodyEn: `A new pharmacy responded to your request for "${activeRequest.productName}".`,
-          time: new Date().toLocaleTimeString(),
+          time: new Date().toISOString(),
           read: false
         };
         setNotifications(prev => [newNotif, ...prev]);
-        if (activeTab !== 'notifications') {
-          setToastNotif(newNotif);
-          setTimeout(() => setToastNotif(null), 5000);
-        }
+        setToastNotif(newNotif);
+        setTimeout(() => setToastNotif(null), 5000);
       }
     }
-  }, [responses.length]);
+  }, [activeRequest?.id, responses.length]);
 
   // 30-minute Countdown Timer logic for reservation
   const [reservationTimeLeft, setReservationTimeLeft] = useState<number>(1800); // 30 minutes in seconds
 
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setInterval>;
     if (activeReservation && reservationTimeLeft > 0 && activeReservation.status === 'active') {
       timer = setInterval(() => {
         setReservationTimeLeft(prev => {
@@ -297,9 +297,7 @@ export default function CustomerPortal({
   const activeRequestResponses = responses.filter(r => r.requestId === activeRequest?.id);
 
   const getPharmacyName = (id: string, currentLang: Language) => {
-    const pharm = pharmacies.find(p => p.id === id);
-    if (!pharm) return id;
-    return currentLang === 'ar' ? pharm.nameAr : pharm.nameEn;
+    return getPharmacyNameUtil(pharmacies, id, currentLang);
   };
 
   const getPharmacyDistance = (id: string) => {

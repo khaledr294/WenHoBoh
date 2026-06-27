@@ -10,7 +10,6 @@ import AuthPage from './components/AuthPage';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { 
-  Role, 
   Language, 
   Pharmacy, 
   CustomerRequest, 
@@ -23,23 +22,7 @@ import InteractiveMap from './components/InteractiveMap';
 import CustomerPortal from './components/CustomerPortal';
 import PharmacyPortal from './components/PharmacyPortal';
 import AdminPortal from './components/AdminPortal';
-import { 
-  Heart, 
-  LayoutGrid, 
-  Activity, 
-  Globe, 
-  Users, 
-  Coins, 
-  Info, 
-  MapPin, 
-  ArrowRightLeft, 
-  HeartHandshake,
-  Bot,
-  Building2,
-  LogOut,
-  Lock,
-  ShieldAlert
-} from 'lucide-react';
+import { playAlertSound } from './lib/utils';
 import {
   listenToPharmacies,
   listenToActiveRequest,
@@ -217,29 +200,6 @@ export default function App() {
     localStorage.setItem('wenhoboh_user', JSON.stringify(user));
   }, [user]);
 
-  // Sound generator function for alert beeps
-  const triggerNotificationSound = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12); // A5
-      
-      gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.3);
-    } catch (e) {
-      // Audio context blocked by browser gesture
-    }
-  };
-
   // Helper logger for system event panel (Saves to Firestore!)
   const handleLogEvent = (type: SystemEvent['type'], msgAr: string, msgEn: string) => {
     const newEvent: SystemEvent = {
@@ -250,7 +210,7 @@ export default function App() {
       messageEn: msgEn
     };
     addSystemEvent(newEvent);
-    triggerNotificationSound();
+    playAlertSound();
   };
 
   // Clear database to clean slate (Wipes Firestore!)
@@ -279,7 +239,7 @@ export default function App() {
         messageEn: 'Database cleared successfully from all experimental logs. Pharmacological network reset to fresh state.'
       };
       await addSystemEvent(cleanEvent);
-      triggerNotificationSound();
+      playAlertSound();
       alert(lang === 'ar' ? '✅ تم مسح قاعدة البيانات بنجاح وإعادة تهيئة الصيدليات!' : '✅ Database wiped and pharmacies re-seeded successfully!');
     } catch (error) {
       console.error("Wipe failed:", error);
@@ -338,12 +298,6 @@ export default function App() {
         addOrUpdatePharmacy(p);
       });
     }
-  };
-
-  const getPharmacyName = (id: string, currentLang: Language) => {
-    const pharm = pharmacies.find(p => p.id === id);
-    if (!pharm) return id;
-    return currentLang === 'ar' ? pharm.nameAr : pharm.nameEn;
   };
 
   return (

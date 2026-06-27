@@ -106,7 +106,7 @@ export const linkPhoneToEmail = async (
         try {
           const result = await linkWithCredential(user, credential);
           return result;
-        } catch (error: any) {
+        } catch (error: unknown) {
           handleLinkingError(error);
           throw error;
         }
@@ -126,7 +126,7 @@ export const linkEmailToPhone = async (user: User, email: string, password: stri
     const credential = EmailAuthProvider.credential(email, password);
     const userCredential = await linkWithCredential(user, credential);
     return userCredential.user;
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleLinkingError(error);
     throw error;
   }
@@ -135,8 +135,9 @@ export const linkEmailToPhone = async (user: User, email: string, password: stri
 /**
  * Helper utility to handle common credential linking errors.
  */
-const handleLinkingError = (error: any) => {
-  switch (error.code) {
+const handleLinkingError = (error: unknown) => {
+  const err = error as any;
+  switch (err.code) {
     case 'auth/credential-already-in-use':
       console.error("This credential is already linked to a different user account.");
       break;

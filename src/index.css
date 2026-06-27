@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@layer utilities {
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -10;
+    }
+  }
+}

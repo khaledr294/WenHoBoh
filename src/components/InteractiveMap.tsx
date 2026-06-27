@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Pharmacy, CustomerRequest, Reservation, Language } from '../types';
-import { MapPin, Navigation, Map as MapIcon, Building2, AlertTriangle, ShieldCheck, Sparkles, HelpCircle } from 'lucide-react';
+import { MapPin, Navigation, Map as MapIcon, Building2, AlertTriangle } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 
 interface InteractiveMapProps {
@@ -194,6 +194,10 @@ export default function InteractiveMap({
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState<boolean>(false);
   const [liveRouteInfo, setLiveRouteInfo] = useState<{ distanceText: string; durationText: string } | null>(null);
 
+  const handleRouteComputed = useCallback((info: { distanceText: string; durationText: string } | null) => {
+    setLiveRouteInfo(info);
+  }, []);
+
   // Global listener for Google Maps Authentication failure
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -375,7 +379,7 @@ export default function InteractiveMap({
               {/* Customer Draggable Pin */}
               <AdvancedMarker
                 position={customerCoords}
-                gmpDraggable={true}
+                draggable={true}
                 onDragEnd={(e) => {
                   if (e.latLng && onCustomerCoordsChange) {
                     onCustomerCoordsChange({ lat: e.latLng.lat(), lng: e.latLng.lng() });
@@ -429,7 +433,7 @@ export default function InteractiveMap({
                   origin={customerCoords}
                   destination={{ lat: reservedPharmacy.latitude, lng: reservedPharmacy.longitude }}
                   lang={lang}
-                  onRouteComputed={setLiveRouteInfo}
+                  onRouteComputed={handleRouteComputed}
                 />
               )}
 
@@ -534,17 +538,9 @@ export default function InteractiveMap({
 
             </svg>
 
-            {/* CSS Animation Injection for dotted vector route path */}
-            <style dangerouslySetInnerHTML={{__html: `
-              @keyframes dash {
-                to {
-                  stroke-dashoffset: -10;
-                }
-              }
-            `}} />
-
             {/* Draggable Patient Marker */}
             <div 
+
               className="absolute pointer-events-none flex flex-col items-center"
               style={{ 
                 left: `${pPatient.x}%`, 

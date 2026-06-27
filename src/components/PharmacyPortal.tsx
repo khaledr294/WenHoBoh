@@ -10,7 +10,8 @@ import {
   PharmacyResponse, 
   Reservation, 
   ResponseStatus,
-  Language 
+  Language,
+  SystemEvent
 } from '../types';
 import { 
   Building2, 
@@ -39,8 +40,10 @@ interface PharmacyPortalProps {
   activeReservation: Reservation | null;
   setActiveReservation: (res: Reservation | null) => void;
   lang: Language;
-  onLogEvent: (type: any, msgAr: string, msgEn: string) => void;
+  onLogEvent: (type: SystemEvent['type'], msgAr: string, msgEn: string) => void;
 }
+
+import { playAlertSound } from '../lib/utils';
 
 export default function PharmacyPortal({
   pharmacies,
@@ -112,7 +115,7 @@ export default function PharmacyPortal({
     }
   };
 
-  const activePharmacy = pharmacies.find(p => p.id === user?.uid) || { ...regForm, id: user?.uid || 'temp' } as Pharmacy;
+  const activePharmacy = pharmacies.find(p => p.id === user?.uid) || { ...regForm, id: user?.uid || 'temp' } as unknown as Pharmacy;
 
   // Response form states
   const [alternativeName, setAlternativeName] = useState('');
@@ -200,29 +203,6 @@ export default function PharmacyPortal({
     const distance = R * c;
     
     return Number(distance.toFixed(1));
-  };
-
-  // Play simulated chime when notification arrives
-  const playAlertSound = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // A5
-      
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.4);
-    } catch (e) {
-      console.warn("Audio Context blocked or unsupported");
-    }
   };
 
   // Submit response handler
