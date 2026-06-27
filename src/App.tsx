@@ -29,6 +29,8 @@ import {
   listenToResponses,
   listenToActiveReservation,
   listenToSystemEvents,
+  listenToAllRequests,
+  listenToAllReservations,
   addOrUpdatePharmacy,
   createCustomerRequest,
   updateCustomerRequestStatus,
@@ -137,6 +139,9 @@ export default function App() {
   const [responses, setResponses] = useState<PharmacyResponse[]>([]);
   const [activeReservation, setActiveReservation] = useState<Reservation | null>(null);
   const [events, setEvents] = useState<SystemEvent[]>([]);
+  // Admin-specific: full lists for admin portal (avoids duplicate listeners in AdminPortal)
+  const [allRequests, setAllRequests] = useState<CustomerRequest[]>([]);
+  const [allReservations, setAllReservations] = useState<Reservation[]>([]);
 
   // User Profile
   const [user, setUser] = useState<UserProfile>(() => {
@@ -160,10 +165,18 @@ export default function App() {
       setActiveRequest(req);
     });
 
-    // 3. Listen to responses
-    const unsubResponses = listenToResponses((list) => {
+    // 3. Listen to responses — scoped to active request
+    let unsubResponses = listenToResponses(null, (list) => {
       setResponses(list);
     });
+
+    // When activeRequest changes, re-subscribe with the new requestId
+    const handleRequestChange = (req: CustomerRequest | null) => {
+      unsubResponses();
+      unsubResponses = listenToResponses(req?.id ?? null, (list) => {
+        setResponses(list);
+      });
+    };
 
     // 4. Listen to activeReservation
     const unsubReservation = listenToActiveReservation((res) => {
@@ -175,16 +188,24 @@ export default function App() {
       setEvents(list);
     });
 
+    // 6. Admin: listen to all requests and reservations
+    const unsubAllRequests = listenToAllRequests((list) => {
+      setAllRequests(list);
+    });
+    const unsubAllReservations = listenToAllReservations((list) => {
+      setAllReservations(list);
+    });
+
     return () => {
       unsubPharmacies();
       unsubRequest();
       unsubResponses();
       unsubReservation();
       unsubEvents();
+      unsubAllRequests();
+      unsubAllReservations();
     };
   }, []);
-
-  // Sync coords and user to localStorage (local client preferences)
   useEffect(() => {
     localStorage.setItem('wenhoboh_customerCoords', JSON.stringify(customerCoords));
   }, [customerCoords]);
@@ -275,16 +296,16 @@ export default function App() {
     }
   };
 
-  const handleSetPharmacies = (updater: React.SetStateAction<Pharmacy[]>) => {
-    if (typeof updater === 'function') {
-      const newList = updater(pharmacies);
-      newList.forEach((p: Pharmacy) => {
-        addOrUpdatePharmacy(p);
-      });
+  // Write only the changed pharmacy to Firestore (not the entire list)
+  const handleSetPharmacies = (updaterOrPharmacy: React.SetStateAction<Pharmacy[]> | Pharmacy) => {
+    if (typeof updaterOrPharmacy !== 'function' && 'id' in updaterOrPharmacy) {
+      // Single pharmacy update — write only this one
+      addOrUpdatePharmacy(updaterOrPharmacy as Pharmacy);
+    } else if (typeof updaterOrPharmacy === 'function') {
+      const newList = (updaterOrPharmacy as (prev: Pharmacy[]) => Pharmacy[])(pharmacies);
+      newList.forEach((p: Pharmacy) => addOrUpdatePharmacy(p));
     } else {
-      updater.forEach((p: Pharmacy) => {
-        addOrUpdatePharmacy(p);
-      });
+      (updaterOrPharmacy as Pharmacy[]).forEach((p: Pharmacy) => addOrUpdatePharmacy(p));
     }
   };
 
@@ -370,6 +391,8 @@ export default function App() {
                   lang={lang}
                   onLogEvent={handleLogEvent}
                   onClearDatabase={handleClearDatabase}
+                  allRequests={allRequests}
+                  allReservations={allReservations}
                 />
               </div>
             </main>

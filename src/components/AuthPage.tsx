@@ -67,9 +67,9 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
     try {
       const formattedPhone = formatPhoneNumber(phone);
       
-      const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE || '+966501511643';
+      const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE;
       // Admin phone restriction
-      if (role === 'admin' && formattedPhone !== adminPhone) {
+      if (role === 'admin' && (!adminPhone || formattedPhone !== adminPhone)) {
         setError(lang === 'ar' ? 'غير مصرح لك بالدخول كمسؤول' : 'Unauthorized to login as admin');
         setLoading(false);
         return;
@@ -125,8 +125,8 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       }
       
       if (role === 'admin') {
-        const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE || '+966501511643';
-        if (user.phoneNumber !== adminPhone) {
+        const adminPhone = (import.meta as any).env.VITE_ADMIN_PHONE;
+        if (!adminPhone || user.phoneNumber !== adminPhone) {
           throw new Error('رقم الجوال هذا غير مصرح له بالدخول كمسؤول');
         }
         if (!docSnap.exists()) {
@@ -206,14 +206,16 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
-      <div className="max-w-md w-full bg-white border border-slate-200 p-8 md:p-10 rounded-[2rem] shadow-xl animate-fade-in">
+    <div className="min-h-screen bg-slate-100 text-slate-900 flex items-center justify-center p-4 selection:bg-teal-500 selection:text-white">
+      <div className="max-w-md w-full bg-white border border-slate-200/80 p-8 md:p-10 rounded-[2rem] shadow-xl animate-fade-in">
         
         <div className="text-center mb-10 space-y-3">
-          <div className="w-16 h-16 bg-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-            {role === 'customer' && <User className="w-8 h-8 text-emerald-600" />}
-            {role === 'pharmacy' && <Building2 className="w-8 h-8 text-emerald-600" />}
-            {role === 'admin' && <ShieldCheck className="w-8 h-8 text-emerald-600" />}
+          <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm"
+            style={{ background: '#E6F7F7' }}
+          >
+            {role === 'customer' && <User className="w-8 h-8" style={{ color: '#0D6E6E' }} />}
+            {role === 'pharmacy' && <Building2 className="w-8 h-8" style={{ color: '#0D6E6E' }} />}
+            {role === 'admin' && <ShieldCheck className="w-8 h-8" style={{ color: '#0D6E6E' }} />}
           </div>
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">
             {lang === 'ar' ? `دخول ${roleLabels[role]}` : `Login as ${roleLabels[role]}`}
@@ -245,7 +247,10 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
+          className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-12 py-4 text-base font-medium text-slate-900 focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400"
+                    style={{ outline: 'none' }}
+                    onFocus={e => { e.target.style.borderColor = '#0D6E6E'; e.target.style.background = 'white'; }}
+                    onBlur={e => { e.target.style.borderColor = ''; e.target.style.background = ''; }}
                     placeholder={lang === 'ar' ? 'اكتب اسمك هنا...' : 'Enter your name...'}
                   />
                 </div>

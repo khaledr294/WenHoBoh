@@ -187,34 +187,34 @@ export default function CustomerPortal({
     }
   }, [activeRequest?.id, responses.length]);
 
-  // 30-minute Countdown Timer logic for reservation
-  const [reservationTimeLeft, setReservationTimeLeft] = useState<number>(1800); // 30 minutes in seconds
+  // Reservation countdown — calculated from actual expiresAt timestamp
+  const [reservationTimeLeft, setReservationTimeLeft] = useState<number>(1800);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
-    if (activeReservation && reservationTimeLeft > 0 && activeReservation.status === 'active') {
-      timer = setInterval(() => {
-        setReservationTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            // Expire reservation
-            setActiveReservation({
-              ...activeReservation,
-              status: 'expired'
-            });
-            onLogEvent(
-              'reservation_completed',
-              `انتهى وقت حجز الطلب لدى صيدلية ${getPharmacyName(activeReservation.pharmacyId, 'ar')}`,
-              `Reservation expired for pharmacy ${getPharmacyName(activeReservation.pharmacyId, 'en')}`
-            );
-            return 0;
-          }
-          return prev - 1;
+    if (!activeReservation || activeReservation.status !== 'active') return;
+    // Calculate seconds remaining from expiresAt
+    const expiresAt = new Date(activeReservation.expiresAt).getTime();
+    const computeRemaining = () => Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+    setReservationTimeLeft(computeRemaining());
+
+    const timer = setInterval(() => {
+      const remaining = computeRemaining();
+      setReservationTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(timer);
+        setActiveReservation({
+          ...activeReservation,
+          status: 'expired'
         });
-      }, 1000);
-    }
+        onLogEvent(
+          'reservation_completed',
+          `انتهى وقت حجز الطلب لدى صيدلية ${getPharmacyName(activeReservation.pharmacyId, 'ar')}`,
+          `Reservation expired for pharmacy ${getPharmacyName(activeReservation.pharmacyId, 'en')}`
+        );
+      }
+    }, 1000);
     return () => clearInterval(timer);
-  }, [activeReservation, reservationTimeLeft]);
+  }, [activeReservation?.id, activeReservation?.status]);
 
   // Preset fill helper
   const handleSelectPreset = (preset: typeof PRESET_PRODUCTS[0]) => {
@@ -333,7 +333,7 @@ export default function CustomerPortal({
     };
 
     setActiveReservation(newReservation);
-    setReservationTimeLeft(1800); // 30 mins reset
+    // Timer will auto-calculate from expiresAt in the useEffect
     
     // Update active request to fulfilled
     setActiveRequest({

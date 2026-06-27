@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, limit, addDoc, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, limit, addDoc, writeBatch, where } from 'firebase/firestore';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Pharmacy, CustomerRequest, PharmacyResponse, Reservation, SystemEvent } from '../types';
@@ -110,12 +110,20 @@ export function listenToActiveRequest(callback: (request: CustomerRequest | null
   });
 }
 
-export function listenToResponses(callback: (responses: PharmacyResponse[]) => void) {
+export function listenToResponses(requestId: string | null, callback: (responses: PharmacyResponse[]) => void) {
   const colRef = collection(db, 'pharmacyResponses');
-  return onSnapshot(colRef, (snapshot) => {
+  // Filter responses by the active requestId if provided for per-request scoping
+  const q = requestId
+    ? query(colRef, orderBy('respondedAt', 'desc'))
+    : query(colRef, orderBy('respondedAt', 'desc'), limit(100));
+  return onSnapshot(q, (snapshot) => {
     const list: PharmacyResponse[] = [];
     snapshot.forEach((docSnap) => {
-      list.push(docSnap.data() as PharmacyResponse);
+      const data = docSnap.data() as PharmacyResponse;
+      // Client-side filter: only return responses relevant to the active request
+      if (!requestId || data.requestId === requestId) {
+        list.push(data);
+      }
     });
     callback(list);
   }, (error) => {
@@ -221,6 +229,25 @@ export async function addSystemEvent(event: SystemEvent) {
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `systemEvents/${event.id}`);
   }
+}
+
+// 3b. Admin-only: listen to ALL requests and ALL reservations (not scoped to latest)
+export function listenToAllRequests(callback: (requests: CustomerRequest[]) => void) {
+  const q = query(collection(db, 'customerRequests'), orderBy('createdAt', 'desc'), limit(200));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(d => d.data() as CustomerRequest));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, 'customerRequests/all');
+  });
+}
+
+export function listenToAllReservations(callback: (reservations: Reservation[]) => void) {
+  const q = query(collection(db, 'reservations'), orderBy('reservedAt', 'desc'), limit(200));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(d => d.data() as Reservation));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, 'reservations/all');
+  });
 }
 
 // 4. Clear/Wipe Firestore Data for Production Clean Slate

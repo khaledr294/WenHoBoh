@@ -15,7 +15,7 @@ export const expireOldReservations = functions.scheduler.onSchedule('every 10 mi
 
   const snapshot = await db.collection('reservations')
     .where('status', '==', 'active')
-    .where('createdAt', '<=', twoHoursAgo.toISOString()) // Assuming createdAt is an ISO string
+    .where('reservedAt', '<=', twoHoursAgo.toISOString()) // Fixed: use reservedAt (not createdAt)
     .get();
 
   if (snapshot.empty) {
@@ -68,7 +68,7 @@ export const archiveOldRequests = functions.scheduler.onSchedule(
 
     const batch = db.batch();
     snapshot.forEach(doc => {
-      batch.update(doc.ref, { status: 'archived', archivedAt: new Date().toISOString() });
+      batch.update(doc.ref, { status: 'archived', archivedAt: new Date().toISOString() }); // 'archived' added to CustomerRequest.status type
     });
 
     await batch.commit();

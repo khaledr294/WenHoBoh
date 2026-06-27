@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Role = 'customer' | 'pharmacy' | 'admin' | 'splitscreen' | 'gateway';
+export type Role = 'customer' | 'pharmacy' | 'admin';
 
 export type Language = 'ar' | 'en';
 
@@ -44,7 +44,7 @@ export interface CustomerRequest {
   prescriptionImages?: string[];
   notes: string | null;
   acceptsAlternative: boolean;
-  status: 'active' | 'fulfilled' | 'expired' | 'cancelled';
+  status: 'active' | 'fulfilled' | 'expired' | 'cancelled' | 'archived';
   createdAt: string;
   expiresAt: string;
 }
@@ -76,7 +76,7 @@ export interface Reservation {
 export interface SystemEvent {
   id: string;
   timestamp: string;
-  type: 'request_created' | 'response_sent' | 'reservation_created' | 'reservation_completed' | 'verification_approved' | 'abuse_warning' | 'prescription_uploaded';
+  type: 'request_created' | 'response_sent' | 'reservation_created' | 'reservation_completed' | 'verification_approved' | 'abuse_warning' | 'prescription_uploaded' | 'request_created_audit' | 'reservation_expired';
   messageAr: string;
   messageEn: string;
 }

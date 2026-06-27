@@ -1,9 +1,150 @@
 @import "tailwindcss";
 
+/* ============================================================
+   WenHoBoh Brand Design System
+   Primary: Teal Deep #0D6E6E / Teal Bright #14B8B8
+   Secondary: Amber Gold #F59E0B
+   Background: Slate 50 #F1F5F9
+   ============================================================ */
+
+@layer base {
+  :root {
+    --color-primary:        #0D6E6E;
+    --color-primary-light:  #14B8B8;
+    --color-primary-hover:  #0B5C5C;
+    --color-accent:         #F59E0B;
+    --color-accent-light:   #FEF3C7;
+    --color-success:        #10B981;
+    --color-danger:         #EF4444;
+    --color-bg:             #F1F5F9;
+    --color-card:           #FFFFFF;
+    --color-text:           #0A0F1E;
+    --color-muted:          #64748B;
+    --font-arabic:          'IBM Plex Sans Arabic', 'Segoe UI', system-ui, sans-serif;
+    --font-latin:           'Inter', system-ui, sans-serif;
+    --radius-card:          1rem;
+    --radius-modal:         1.5rem;
+  }
+
+  html[dir="rtl"] body,
+  html[dir="rtl"] * {
+    font-family: var(--font-arabic);
+  }
+
+  html[dir="ltr"] body,
+  html[dir="ltr"] * {
+    font-family: var(--font-latin);
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+}
+
 @layer utilities {
+  /* Glassmorphism card utility */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  /* Brand gradient */
+  .brand-gradient {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  }
+
+  /* Teal primary button */
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 150ms, transform 100ms;
+  }
+  .btn-primary:hover { background-color: var(--color-primary-hover); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* Amber accent button */
+  .btn-accent {
+    background-color: var(--color-accent);
+    color: #0A0F1E;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 150ms, transform 100ms;
+  }
+  .btn-accent:hover { background-color: #D97706; transform: translateY(-1px); }
+
+  /* Status badges */
+  .badge-available {
+    background-color: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+  }
+  .badge-unavailable {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+  }
+  .badge-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+  }
+
+  /* Animated broadcast pulse */
+  @keyframes broadcast-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.15); }
+  }
+  .animate-broadcast {
+    animation: broadcast-pulse 1.5s ease-in-out infinite;
+  }
+
+  /* Radar sweep for active broadcast */
+  @keyframes radar-sweep {
+    from { transform: scale(0.5); opacity: 1; }
+    to { transform: scale(2.5); opacity: 0; }
+  }
+  .animate-radar {
+    animation: radar-sweep 2s ease-out infinite;
+  }
+
+  /* Slide-in notification */
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .animate-slide-in {
+    animation: slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Fade in */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out forwards;
+  }
+
+  /* SVG path animation (used in fallback map) */
   @keyframes dash {
-    to {
-      stroke-dashoffset: -10;
-    }
+    to { stroke-dashoffset: -10; }
+  }
+  .animate-dash {
+    animation: dash 1.5s linear infinite;
   }
 }

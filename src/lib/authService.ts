@@ -1,12 +1,6 @@
 import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
   RecaptchaVerifier, 
   signInWithPhoneNumber,
-  linkWithCredential,
-  EmailAuthProvider,
-  PhoneAuthProvider,
   User,
   ConfirmationResult
 } from 'firebase/auth';
@@ -27,32 +21,6 @@ export const initRecaptcha = (elementId: string): RecaptchaVerifier => {
       // Response expired. Ask user to solve reCAPTCHA again.
     }
   });
-};
-
-/**
- * Signs up a new user with Email and Password.
- */
-export const signUpWithEmail = async (email: string, password: string): Promise<User> => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    console.error("Error signing up with email:", error);
-    throw error;
-  }
-};
-
-/**
- * Signs in an existing user with Email and Password.
- */
-export const signInWithEmail = async (email: string, password: string): Promise<User> => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    console.error("Error signing in with email:", error);
-    throw error;
-  }
 };
 
 /**
@@ -81,73 +49,5 @@ export const verifySmsOtp = async (confirmationResult: ConfirmationResult, otpCo
   } catch (error) {
     console.error("Error verifying SMS OTP:", error);
     throw error;
-  }
-};
-
-/**
- * Links a Phone number credential to an active Email/Password user session.
- * This function initiates the SMS verification flow for linking.
- */
-export const linkPhoneToEmail = async (
-  user: User, 
-  phoneNumber: string, 
-  recaptchaVerifier: RecaptchaVerifier
-): Promise<ConfirmationResult> => {
-  try {
-    // 1. We must verify the phone number first using a PhoneAuthProvider
-    const phoneProvider = new PhoneAuthProvider(auth);
-    const verificationId = await phoneProvider.verifyPhoneNumber(phoneNumber, recaptchaVerifier);
-    
-    // We return a mock ConfirmationResult-like object that the UI can use to confirm the code
-    return {
-      verificationId,
-      confirm: async (code: string) => {
-        const credential = PhoneAuthProvider.credential(verificationId, code);
-        try {
-          const result = await linkWithCredential(user, credential);
-          return result;
-        } catch (error: unknown) {
-          handleLinkingError(error);
-          throw error;
-        }
-      }
-    } as unknown as ConfirmationResult;
-  } catch (error) {
-    console.error("Error initiating phone linking:", error);
-    throw error;
-  }
-};
-
-/**
- * Links an Email/Password credential to an active Phone session.
- */
-export const linkEmailToPhone = async (user: User, email: string, password: string): Promise<User> => {
-  try {
-    const credential = EmailAuthProvider.credential(email, password);
-    const userCredential = await linkWithCredential(user, credential);
-    return userCredential.user;
-  } catch (error: unknown) {
-    handleLinkingError(error);
-    throw error;
-  }
-};
-
-/**
- * Helper utility to handle common credential linking errors.
- */
-const handleLinkingError = (error: unknown) => {
-  const err = error as any;
-  switch (err.code) {
-    case 'auth/credential-already-in-use':
-      console.error("This credential is already linked to a different user account.");
-      break;
-    case 'auth/provider-already-linked':
-      console.error("The user is already linked to this provider.");
-      break;
-    case 'auth/account-exists-with-different-credential':
-      console.error("An account already exists with the same email address but different sign-in credentials.");
-      break;
-    default:
-      console.error("An unexpected error occurred during account linking:", error);
   }
 };

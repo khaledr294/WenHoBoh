@@ -23,7 +23,7 @@ import {
   Trash2,
   Edit2
 } from 'lucide-react';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 interface AdminPortalProps {
@@ -33,6 +33,8 @@ interface AdminPortalProps {
   lang: Language;
   onLogEvent: (type: SystemEvent['type'], msgAr: string, msgEn: string) => void;
   onClearDatabase?: () => void;
+  allRequests: CustomerRequest[];
+  allReservations: Reservation[];
 }
 
 export default function AdminPortal({
@@ -42,26 +44,13 @@ export default function AdminPortal({
   lang,
   onLogEvent,
   onClearDatabase,
+  allRequests,
+  allReservations,
 }: AdminPortalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'pharmacies' | 'requests'>('overview');
   const [editingPharmacy, setEditingPharmacy] = useState<Pharmacy | null>(null);
   
-  // Live data states
-  const [allRequests, setAllRequests] = useState<CustomerRequest[]>([]);
-  const [allReservations, setAllReservations] = useState<Reservation[]>([]);
-
-  useEffect(() => {
-    const unsubRequests = onSnapshot(collection(db, 'customerRequests'), (snap) => {
-      setAllRequests(snap.docs.map(d => d.data() as CustomerRequest).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    });
-    const unsubReservations = onSnapshot(collection(db, 'reservations'), (snap) => {
-      setAllReservations(snap.docs.map(d => d.data() as Reservation).sort((a,b) => new Date(b.reservedAt).getTime() - new Date(a.reservedAt).getTime()));
-    });
-    return () => {
-      unsubRequests();
-      unsubReservations();
-    };
-  }, []);
+  // allRequests and allReservations now come from App.tsx via props — no duplicate listeners
 
   const handleSavePharmacy = async (e: React.FormEvent) => {
     e.preventDefault();
