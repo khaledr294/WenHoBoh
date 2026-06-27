@@ -25,6 +25,9 @@ export interface Pharmacy {
   longitude: number;
   isVerified: boolean;
   licenseNumber: string;
+  workingHours?: string;
+  hasWasfaty?: boolean;
+  hasDelivery?: boolean;
   rating: number;
   responseRate: number;
   avgResponseTimeSec: number;

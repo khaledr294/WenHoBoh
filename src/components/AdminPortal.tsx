@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { Pharmacy, SystemEvent, Language } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Pharmacy, SystemEvent, Language, CustomerRequest, Reservation, PharmacyResponse } from '../types';
 import { 
   ShieldAlert, 
   Users, 
@@ -18,8 +18,13 @@ import {
   Layers,
   Globe,
   Key,
-  Cloud
+  Cloud,
+  Settings,
+  Trash2,
+  Edit2
 } from 'lucide-react';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface AdminPortalProps {
   pharmacies: Pharmacy[];
@@ -30,16 +35,6 @@ interface AdminPortalProps {
   onClearDatabase?: () => void;
 }
 
-interface PendingPharmacy {
-  id: string;
-  nameAr: string;
-  nameEn: string;
-  crNumber: string;
-  licenseNumber: string;
-  addressAr: string;
-  addressEn: string;
-}
-
 export default function AdminPortal({
   pharmacies,
   setPharmacies,
@@ -48,14 +43,53 @@ export default function AdminPortal({
   onLogEvent,
   onClearDatabase,
 }: AdminPortalProps) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'pharmacies' | 'requests'>('overview');
+  const [editingPharmacy, setEditingPharmacy] = useState<Pharmacy | null>(null);
+  
+  // Live data states
+  const [allRequests, setAllRequests] = useState<CustomerRequest[]>([]);
+  const [allReservations, setAllReservations] = useState<Reservation[]>([]);
+
+  useEffect(() => {
+    const unsubRequests = onSnapshot(collection(db, 'customerRequests'), (snap) => {
+      setAllRequests(snap.docs.map(d => d.data() as CustomerRequest).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    });
+    const unsubReservations = onSnapshot(collection(db, 'reservations'), (snap) => {
+      setAllReservations(snap.docs.map(d => d.data() as Reservation).sort((a,b) => new Date(b.reservedAt).getTime() - new Date(a.reservedAt).getTime()));
+    });
+    return () => {
+      unsubRequests();
+      unsubReservations();
+    };
+  }, []);
+
+  const handleSavePharmacy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPharmacy) return;
+    try {
+      await updateDoc(doc(db, 'pharmacies', editingPharmacy.id), {
+        nameAr: editingPharmacy.nameAr,
+        nameEn: editingPharmacy.nameEn,
+        licenseNumber: editingPharmacy.licenseNumber,
+        workingHours: editingPharmacy.workingHours,
+        hasWasfaty: editingPharmacy.hasWasfaty,
+        hasDelivery: editingPharmacy.hasDelivery,
+        latitude: editingPharmacy.latitude,
+        longitude: editingPharmacy.longitude,
+      });
+      onLogEvent('verification_approved', `تم تحديث بيانات الصيدلية ${editingPharmacy.nameAr}`, `Updated pharmacy details for ${editingPharmacy.nameEn}`);
+      setEditingPharmacy(null);
+    } catch (e) {
+      alert('Error updating pharmacy');
+    }
+  };
+
   // Pending verification list
   const pendingList = pharmacies.filter(p => p.status === 'pending');
 
   // Handle Approve Licensing
   const handleApprovePharmacy = async (pending: Pharmacy) => {
     try {
-      const { doc, updateDoc } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
       await updateDoc(doc(db, 'pharmacies', pending.id), {
         status: 'active',
         isVerified: true
@@ -73,8 +107,6 @@ export default function AdminPortal({
   // Reject licensing
   const handleRejectPharmacy = async (pending: Pharmacy) => {
     try {
-      const { doc, deleteDoc } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
       await deleteDoc(doc(db, 'pharmacies', pending.id));
       onLogEvent(
         'abuse_warning',
@@ -86,11 +118,32 @@ export default function AdminPortal({
     }
   };
 
+  const handleDeletePharmacy = async (id: string, name: string) => {
+    if (window.confirm(lang === 'ar' ? 'هل أنت متأكد من حذف هذه الصيدلية؟' : 'Are you sure you want to delete this pharmacy?')) {
+      try {
+        await deleteDoc(doc(db, 'pharmacies', id));
+        onLogEvent('abuse_warning', `تم حذف صيدلية ${name}`, `Deleted pharmacy ${name}`);
+      } catch (e) {
+        alert('Error deleting pharmacy');
+      }
+    }
+  };
+
+  const handleDeleteRequest = async (id: string) => {
+    if (window.confirm(lang === 'ar' ? 'حذف هذا الطلب؟' : 'Delete this request?')) {
+      try {
+        await deleteDoc(doc(db, 'customerRequests', id));
+      } catch (e) {
+        alert('Error deleting request');
+      }
+    }
+  };
+
   // Stats calculation
   const totalPharmacies = pharmacies.length;
   const verifiedPharmacies = pharmacies.filter(p => p.isVerified).length;
-  const activeBroadcasting = events.filter(e => e.type === 'request_created').length;
-  const totalBookings = events.filter(e => e.type === 'reservation_created').length;
+  const activeBroadcasting = allRequests.filter(r => r.status === 'active').length;
+  const totalBookings = allReservations.length;
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl font-sans text-slate-900 space-y-6">
@@ -112,7 +165,33 @@ export default function AdminPortal({
         </div>
       </div>
 
-      {/* Analytics Executive Widgets */}
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+        <button 
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${activeTab === 'overview' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+        >
+          {lang === 'ar' ? 'نظرة عامة' : 'Overview'}
+        </button>
+        <button 
+          onClick={() => setActiveTab('pharmacies')}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold transition flex gap-2 items-center ${activeTab === 'pharmacies' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+        >
+          <Building className="w-4 h-4" />
+          {lang === 'ar' ? 'إدارة الصيدليات' : 'Pharmacies'}
+        </button>
+        <button 
+          onClick={() => setActiveTab('requests')}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold transition flex gap-2 items-center ${activeTab === 'requests' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+        >
+          <Activity className="w-4 h-4" />
+          {lang === 'ar' ? 'متابعة الطلبات' : 'Requests & Reservations'}
+        </button>
+      </div>
+
+      {activeTab === 'overview' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Analytics Executive Widgets */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 shadow-sm">
           <Building className="w-4 h-4 text-emerald-400 mb-2" />
@@ -354,6 +433,198 @@ export default function AdminPortal({
           )}
         </div>
       </div>
+        </div>
+      )}
+
+      {activeTab === 'pharmacies' && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Building className="w-5 h-5 text-emerald-500" />
+              {lang === 'ar' ? 'إدارة الصيدليات المسجلة' : 'Registered Pharmacies'}
+            </h3>
+          </div>
+          
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-100 text-slate-600 font-mono text-xs uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3">{lang === 'ar' ? 'اسم الصيدلية' : 'Name'}</th>
+                    <th className="px-4 py-3">{lang === 'ar' ? 'رقم الترخيص' : 'License'}</th>
+                    <th className="px-4 py-3">{lang === 'ar' ? 'الحالة' : 'Status'}</th>
+                    <th className="px-4 py-3 text-right">{lang === 'ar' ? 'إجراءات' : 'Actions'}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {pharmacies.map(p => (
+                    <tr key={p.id} className="hover:bg-slate-100/50 transition">
+                      <td className="px-4 py-3">
+                        <div className="font-bold text-slate-900">{lang === 'ar' ? p.nameAr : p.nameEn}</div>
+                        <div className="text-[10px] text-slate-500">{p.id}</div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-700">{p.licenseNumber || 'N/A'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-[10px] font-bold rounded-md ${p.status === 'active' ? 'bg-emerald-100 text-emerald-700' : p.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                          {p.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right flex justify-end gap-2">
+                        <button 
+                          onClick={() => setEditingPharmacy(p)}
+                          className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-md transition"
+                          title={lang === 'ar' ? 'تعديل' : 'Edit'}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeletePharmacy(p.id, lang === 'ar' ? p.nameAr : p.nameEn)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition"
+                          title={lang === 'ar' ? 'حذف' : 'Delete'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {pharmacies.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                        {lang === 'ar' ? 'لا توجد صيدليات' : 'No pharmacies found'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {editingPharmacy && (
+            <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-in">
+                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                  <h3 className="font-bold text-slate-900">{lang === 'ar' ? 'تعديل بيانات الصيدلية' : 'Edit Pharmacy Details'}</h3>
+                  <button onClick={() => setEditingPharmacy(null)} className="text-slate-400 hover:text-slate-600">
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                </div>
+                <form onSubmit={handleSavePharmacy} className="p-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">{lang === 'ar' ? 'الاسم' : 'Name'} (Ar)</label>
+                      <input required type="text" value={editingPharmacy.nameAr} onChange={e => setEditingPharmacy({...editingPharmacy, nameAr: e.target.value})} className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">{lang === 'ar' ? 'الاسم' : 'Name'} (En)</label>
+                      <input required type="text" value={editingPharmacy.nameEn} onChange={e => setEditingPharmacy({...editingPharmacy, nameEn: e.target.value})} className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">{lang === 'ar' ? 'رقم الترخيص' : 'License Number'}</label>
+                    <input required type="text" value={editingPharmacy.licenseNumber} onChange={e => setEditingPharmacy({...editingPharmacy, licenseNumber: e.target.value})} className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">{lang === 'ar' ? 'مواعيد العمل' : 'Working Hours'}</label>
+                    <input type="text" value={editingPharmacy.workingHours || ''} onChange={e => setEditingPharmacy({...editingPharmacy, workingHours: e.target.value})} className="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="e.g. 24/7 or 8 AM - 11 PM" />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">{lang === 'ar' ? 'خط العرض (Latitude)' : 'Latitude'}</label>
+                      <input required type="number" step="any" value={editingPharmacy.latitude} onChange={e => setEditingPharmacy({...editingPharmacy, latitude: parseFloat(e.target.value)})} className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">{lang === 'ar' ? 'خط الطول (Longitude)' : 'Longitude'}</label>
+                      <input required type="number" step="any" value={editingPharmacy.longitude} onChange={e => setEditingPharmacy({...editingPharmacy, longitude: parseFloat(e.target.value)})} className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 items-center">
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
+                      <input type="checkbox" checked={editingPharmacy.hasWasfaty || false} onChange={e => setEditingPharmacy({...editingPharmacy, hasWasfaty: e.target.checked})} className="w-4 h-4 rounded border-slate-300 text-emerald-600" />
+                      {lang === 'ar' ? 'خدمة وصفتي' : 'Wasfaty Service'}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
+                      <input type="checkbox" checked={editingPharmacy.hasDelivery || false} onChange={e => setEditingPharmacy({...editingPharmacy, hasDelivery: e.target.checked})} className="w-4 h-4 rounded border-slate-300 text-emerald-600" />
+                      {lang === 'ar' ? 'خدمة التوصيل' : 'Delivery Service'}
+                    </label>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-slate-200 flex justify-end gap-2">
+                    <button type="button" onClick={() => setEditingPharmacy(null)} className="px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                      {lang === 'ar' ? 'إلغاء' : 'Cancel'}
+                    </button>
+                    <button type="submit" className="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition">
+                      {lang === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'requests' && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-500" />
+              {lang === 'ar' ? 'متابعة طلبات العملاء' : 'Customer Requests Tracking'}
+            </h3>
+          </div>
+          
+          <div className="space-y-3">
+            {allRequests.map(req => (
+              <div key={req.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      {req.productName}
+                    </h4>
+                    <p className="text-[10px] text-slate-500 mt-1 font-mono">
+                      ID: {req.id}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-[10px] font-bold rounded-md ${req.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'}`}>
+                      {req.status.toUpperCase()}
+                    </span>
+                    <button 
+                      onClick={() => handleDeleteRequest(req.id)}
+                      className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition"
+                      title={lang === 'ar' ? 'حذف' : 'Delete'}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl p-3 border border-slate-200 text-xs">
+                  <div className="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
+                    <span className="text-slate-500">{lang === 'ar' ? 'الوقت' : 'Time'}</span>
+                    <span className="font-mono text-slate-700">{new Date(req.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
+                    <span className="text-slate-500">{lang === 'ar' ? 'الردود' : 'Responses'}</span>
+                    <span className="font-bold text-slate-900">
+                      {/* Calculate responses count roughly or just fetch actual count if needed, but we don't have all responses directly linked without filtering allResponses. We can filter. */}
+                      {allReservations.filter(res => res.requestId === req.id).length > 0 ? '✔️ حجز' : 'بانتظار الصيدليات'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {allRequests.length === 0 && (
+              <div className="text-center p-8 bg-slate-50 rounded-2xl border border-slate-200 text-slate-500">
+                {lang === 'ar' ? 'لا توجد طلبات' : 'No requests found'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

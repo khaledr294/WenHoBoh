@@ -152,14 +152,7 @@ export default function App() {
   useEffect(() => {
     // 1. Listen to pharmacies
     const unsubPharmacies = listenToPharmacies((list) => {
-      if (list.length === 0) {
-        // Seed initial pharmacies if empty in Firestore
-        INITIAL_PHARMACIES.forEach(p => {
-          addOrUpdatePharmacy(p);
-        });
-      } else {
-        setPharmacies(list);
-      }
+      setPharmacies(list);
     });
 
     // 2. Listen to activeRequest
@@ -223,12 +216,7 @@ export default function App() {
       setResponses([]);
       setActiveReservation(null);
       setEvents([]);
-      setPharmacies(INITIAL_PHARMACIES);
-
-      // Re-seed pharmacies
-      for (const p of INITIAL_PHARMACIES) {
-        await addOrUpdatePharmacy(p);
-      }
+      setPharmacies([]);
       
       const clearTime = new Date().toISOString();
       const cleanEvent: SystemEvent = {
@@ -240,7 +228,7 @@ export default function App() {
       };
       await addSystemEvent(cleanEvent);
       playAlertSound();
-      alert(lang === 'ar' ? '✅ تم مسح قاعدة البيانات بنجاح وإعادة تهيئة الصيدليات!' : '✅ Database wiped and pharmacies re-seeded successfully!');
+      alert(lang === 'ar' ? '✅ تم مسح قاعدة البيانات بنجاح!' : '✅ Database wiped successfully!');
     } catch (error) {
       console.error("Wipe failed:", error);
       alert((lang === 'ar' ? '❌ فشل مسح قاعدة البيانات: ' : '❌ Database wipe failed: ') + (error instanceof Error ? error.message : String(error)));

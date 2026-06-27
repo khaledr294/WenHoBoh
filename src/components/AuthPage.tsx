@@ -24,6 +24,9 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
   const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
   const [license, setLicense] = useState('');
+  const [workingHours, setWorkingHours] = useState('24/7');
+  const [hasWasfaty, setHasWasfaty] = useState(false);
+  const [hasDelivery, setHasDelivery] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
@@ -178,6 +181,9 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
           longitude: 43.990,
           isVerified: false,
           licenseNumber: license,
+          workingHours,
+          hasWasfaty,
+          hasDelivery,
           rating: 5,
           responseRate: 100,
           avgResponseTimeSec: 60,
@@ -246,17 +252,52 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
               </div>
 
               {role === 'pharmacy' && (
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
-                    {lang === 'ar' ? 'رقم الترخيص' : 'License Number'}
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={license}
-                    onChange={(e) => setLicense(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
-                  />
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
+                      {lang === 'ar' ? 'رقم الترخيص' : 'License Number'}
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      value={license}
+                      onChange={(e) => setLicense(e.target.value)}
+                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 ms-1">
+                      {lang === 'ar' ? 'مواعيد العمل' : 'Working Hours'}
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      value={workingHours}
+                      onChange={(e) => setWorkingHours(e.target.value)}
+                      placeholder="e.g. 24/7 or 8 AM - 11 PM"
+                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={hasWasfaty}
+                        onChange={(e) => setHasWasfaty(e.target.checked)}
+                        className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      {lang === 'ar' ? 'خدمة وصفتي' : 'Wasfaty Service'}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={hasDelivery}
+                        onChange={(e) => setHasDelivery(e.target.checked)}
+                        className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      {lang === 'ar' ? 'خدمة التوصيل' : 'Delivery Service'}
+                    </label>
+                  </div>
                 </div>
               )}
             </div>
