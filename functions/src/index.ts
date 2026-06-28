@@ -77,7 +77,48 @@ export const archiveOldRequests = functions.scheduler.onSchedule(
 );
 
 /**
- * 3. Firestore Trigger: Audit Logs for New Requests
+ * 4. Secure Wipe — HTTPS callable (Admin-only)
+ * Deletes all operational Firestore collections.
+ * Only callable by authenticated users whose UID exists in the /admins collection.
+ */
+export const secureWipeFirestore = functions.https.onCall(async (request) => {
+  // Enforce authentication
+  if (!request.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated to wipe data.');
+  }
+
+  // Enforce admin role via Firestore
+  const adminSnap = await db.collection('admins').doc(request.auth.uid).get();
+  if (!adminSnap.exists) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can wipe data.');
+  }
+
+  const colNames = ['pharmacies', 'customerRequests', 'pharmacyResponses', 'reservations', 'systemEvents'];
+  for (const colName of colNames) {
+    const snap = await db.collection(colName).get();
+    let batch = db.batch();
+    let count = 0;
+    for (const docSnap of snap.docs) {
+      batch.delete(docSnap.ref);
+      if (++count === 500) {
+        await batch.commit();
+        batch = db.batch();
+        count = 0;
+      }
+    }
+    if (count > 0) await batch.commit();
+  }
+
+  // Log the wipe event
+  await db.collection('systemEvents').add({
+    type: 'verification_approved',
+    timestamp: new Date().toISOString(),
+    messageAr: 'تم مسح قاعدة البيانات بواسطة المسؤول عبر Cloud Function آمنة',
+    messageEn: 'Database wiped by admin via secure Cloud Function'
+  });
+
+  return { success: true };
+});
  * Automatically catches new requests and writes an audit log to systemEvents.
  */
 export const logNewRequestEvent = functions.firestore.onDocumentCreated(

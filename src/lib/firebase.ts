@@ -186,7 +186,7 @@ export async function createCustomerRequest(request: CustomerRequest) {
   }
 }
 
-export async function updateCustomerRequestStatus(requestId: string, status: 'active' | 'fulfilled' | 'expired' | 'cancelled') {
+export async function updateCustomerRequestStatus(requestId: string, status: 'active' | 'fulfilled' | 'expired' | 'cancelled' | 'archived') {
   const docRef = doc(db, 'customerRequests', requestId);
   try {
     await updateDoc(docRef, { status });
