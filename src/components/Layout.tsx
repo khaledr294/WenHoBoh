@@ -51,7 +51,7 @@ export default function Layout({ lang, setLang }: { lang: Language, setLang: (la
                 </span>
               </div>
               <span className="text-[11px] block -mt-0.5 font-medium text-slate-500">
-                {lang === 'ar' ? 'دواؤك، قريب منك' : 'Your Medicine, Nearby'}
+                {lang === 'ar' ? 'كل اللي تحتاجه من الصيدلية، قريب منك' : 'Your Medicine, Nearby'}
               </span>
             </div>
           </div>
