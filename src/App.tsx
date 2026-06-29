@@ -134,7 +134,7 @@ export default function App() {
   });
 
   // Global State (Synchronized with Firestore in real-time)
-  const [pharmacies, setPharmacies] = useState<Pharmacy[]>(INITIAL_PHARMACIES);
+  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [activeRequest, setActiveRequest] = useState<CustomerRequest | null>(null);
   const [responses, setResponses] = useState<PharmacyResponse[]>([]);
   const [activeReservation, setActiveReservation] = useState<Reservation | null>(null);
