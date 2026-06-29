@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Language } from '../types';
 import { Globe, LogOut, Building2, Heart } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
+import Logo from './Logo';
 
 export default function Layout({ lang, setLang }: { lang: Language, setLang: (lang: Language) => void }) {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function Layout({ lang, setLang }: { lang: Language, setLang: (la
           background: 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(13,110,110,0.12)'
+          borderBottom: '1px solid rgba(0, 169, 224, 0.12)'
         }}
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -31,27 +32,21 @@ export default function Layout({ lang, setLang }: { lang: Language, setLang: (la
             className="flex items-center gap-3 cursor-pointer select-none group"
             onClick={() => navigate('/')}
           >
-            {/* Brand mark: circular W with teal gradient */}
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-lg shadow-lg group-hover:scale-105 transition-transform"
-              style={{ background: 'linear-gradient(135deg,#0D6E6E,#14B8B8)' }}
-            >
-              و
-            </div>
+            <Logo showText={false} size="sm" lang={lang} />
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black tracking-tight group-hover:text-teal-700 transition-colors"
-                  style={{ color: '#0A0F1E' }}
-                >
-                  {lang === 'ar' ? 'وينهوبه' : 'WENHOBOH'}
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-lg font-black tracking-tight text-[#121E31] group-hover:text-[#00A9E0] transition-colors">
+                  وينهوبه
                 </h1>
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold tracking-wider"
-                  style={{ background: '#E6F7F7', color: '#0D6E6E', border: '1px solid #A7D9D9' }}
-                >
+                <span className="text-[9px] font-mono font-bold tracking-widest text-[#00A9E0]">
+                  WENHOBOH
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-[#e6fcf9] text-[#00A9E0] border border-[#30E3CA]/30">
                   {lang === 'ar' ? 'عنيزة' : 'Unaizah'}
                 </span>
               </div>
-              <span className="text-[11px] block -mt-0.5 font-medium text-slate-500">
-                {lang === 'ar' ? 'كل اللي تحتاجه من الصيدلية، قريب منك' : 'Your Medicine, Nearby'}
+              <span className="text-[10px] block -mt-0.5 font-medium text-slate-500">
+                {lang === 'ar' ? 'دواؤك ومنتجاتك الصيدلية.. أقرب مما تتخيل' : 'Your medicine & pharmacy items.. Closer than you think'}
               </span>
             </div>
           </div>
@@ -61,11 +56,11 @@ export default function Layout({ lang, setLang }: { lang: Language, setLang: (la
             {!user && (
               <button
                 onClick={() => navigate('/partner-pharmacy-login')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                 style={{
-                  background: '#E6F7F7',
-                  border: '2px solid #A7D9D9',
-                  color: '#0D6E6E'
+                  background: '#e6fcf9',
+                  border: '2px solid #30E3CA',
+                  color: '#00A9E0'
                 }}
               >
                 <Building2 className="w-4 h-4" />
@@ -91,9 +86,9 @@ export default function Layout({ lang, setLang }: { lang: Language, setLang: (la
             {/* Language switch */}
             <button
               onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm bg-slate-100 hover:bg-slate-200 border-2 border-slate-200 text-slate-700"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm bg-slate-100 hover:bg-slate-200 border-2 border-slate-200 text-slate-700 cursor-pointer"
             >
-              <Globe className="w-4 h-4" style={{ color: '#0D6E6E' }} />
+              <Globe className="w-4 h-4" style={{ color: '#00A9E0' }} />
               <span>{lang === 'ar' ? 'English' : 'العربية'}</span>
             </button>
           </div>
@@ -105,15 +100,11 @@ export default function Layout({ lang, setLang }: { lang: Language, setLang: (la
 
       {/* Footer */}
       <footer className="border-t text-xs text-slate-400 py-6 px-4 text-center mt-12 space-y-2"
-        style={{ background: '#0A0F1E', borderColor: '#1E293B' }}
+        style={{ background: '#121E31', borderColor: '#1E293B' }}
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-sm"
-              style={{ background: 'linear-gradient(135deg,#0D6E6E,#14B8B8)' }}
-            >
-              و
-            </div>
+            <Logo showText={false} size="sm" lang={lang} />
             <p style={{ color: '#64748B' }}>
               {lang === 'ar'
                 ? 'وينهوبه — محافظة عنيزة، منطقة القصيم © ٢٠٢٦'

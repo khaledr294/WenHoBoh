@@ -6,6 +6,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { Pharmacy, Language } from '../types';
 import { Mail, Lock, Phone, User, Building2, ShieldCheck, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { initRecaptcha, sendSmsOtp, verifySmsOtp, signInAdmin } from '../lib/authService';
+import Logo from './Logo';
 
 declare global {
   interface Window { recaptchaVerifier: any; }
@@ -187,7 +188,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
   // ── Shared UI helpers ──────────────────────────────────────────────────────
   const tealFocus = {
     onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
-      e.target.style.borderColor = '#0D6E6E';
+      e.target.style.borderColor = '#00A9E0';
       e.target.style.background = '#fff';
     },
     onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
@@ -205,7 +206,7 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       type="submit"
       disabled={disabled || loading}
       className="w-full text-white font-bold rounded-2xl py-4 mt-8 text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 shadow-lg"
-      style={{ background: loading ? '#14B8B8' : 'linear-gradient(135deg,#0D6E6E,#14B8B8)', boxShadow: '0 4px 20px rgba(13,110,110,0.25)' }}
+      style={{ background: loading ? '#30E3CA' : 'linear-gradient(135deg,#00A9E0,#30E3CA)', boxShadow: '0 4px 20px rgba(0,169,224,0.25)' }}
     >
       {loading
         ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
@@ -221,16 +222,13 @@ export default function AuthPage({ role, lang }: AuthPageProps) {
       <div className="max-w-md w-full bg-white border border-slate-200/80 p-8 md:p-10 rounded-[2rem] shadow-xl animate-fade-in">
 
         {/* Header */}
-        <div className="text-center mb-10 space-y-2">
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm" style={{ background: '#E6F7F7' }}>
-            <RoleIcon className="w-8 h-8" style={{ color: '#0D6E6E' }} />
+        <div className="text-center mb-8 space-y-4">
+          <Logo size="lg" lang={lang} />
+          
+          <div className="inline-flex items-center gap-1.5 bg-[#e6fcf9] text-[#00A9E0] border border-[#30E3CA]/30 px-3 py-1 rounded-full text-xs font-bold font-mono">
+            <RoleIcon className="w-3.5 h-3.5 text-[#00A9E0]" />
+            <span>{lang === 'ar' ? `بوابة الـ${roleLabel}` : `${roleLabel} Portal`}</span>
           </div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-            {lang === 'ar' ? `دخول ${roleLabel}` : `${roleLabel} Login`}
-          </h2>
-          <p className="text-slate-500 text-sm font-medium">
-            {lang === 'ar' ? 'نظام وينهوبه — عنيزة' : 'Wenhoboh System — Unaizah'}
-          </p>
         </div>
 
         {/* Error */}

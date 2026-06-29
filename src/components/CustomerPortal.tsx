@@ -723,6 +723,7 @@ export default function CustomerPortal({
 
       {/* Main Form (Hidden if there's an active request awaiting results) */}
       {!activeRequest ? (
+        <>
         <form onSubmit={handleBroadcast} className="space-y-4">
           <div>
             <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
@@ -860,7 +861,7 @@ export default function CustomerPortal({
           <button
             type="submit"
             disabled={isBroadcasting}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-100 text-white font-semibold rounded-xl py-3 shadow-lg shadow-emerald-950/20 active:scale-98 transition duration-150 flex items-center justify-center gap-2 text-base font-medium"
+            className="w-full bg-gradient-to-r from-[#00A9E0] to-[#30E3CA] hover:from-[#0091c2] hover:to-[#28cbbe] text-white font-semibold rounded-xl py-3 shadow-lg shadow-[#00A9E0]/15 active:scale-98 transition duration-150 flex items-center justify-center gap-2 text-base font-medium cursor-pointer"
           >
             {isBroadcasting ? (
               <>
@@ -870,11 +871,76 @@ export default function CustomerPortal({
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                {lang === 'ar' ? 'وينهوبه 📡' : 'Wenhoboh 📡'}
+                {lang === 'ar' ? 'البث والبحث عن الدواء 📡' : 'Broadcast Request 📡'}
               </>
             )}
           </button>
         </form>
+
+        {/* How It Works Guide Section (Matching Brand Identity) */}
+        <div className="bg-[#FFFFFF] border border-[#00A9E0]/20 rounded-3xl p-5 md:p-6 shadow-sm space-y-4">
+          <h3 className="text-lg font-black text-[#121E31] flex items-center gap-2 border-b border-slate-100 pb-2">
+            <span className="w-2 h-5 rounded bg-gradient-to-b from-[#30E3CA] to-[#00A9E0]" />
+            {lang === 'ar' ? 'كيف يعمل وينهوبه؟' : 'How Wenhoboh Works'}
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Step 1 */}
+            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+              <div className="w-10 h-10 rounded-xl bg-[#e6fcf9] text-[#30E3CA] flex items-center justify-center flex-shrink-0 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+              </div>
+              <div className="space-y-0.5 text-start font-sans">
+                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '١. اطلب الدواء' : '1. Order Item'}</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  {lang === 'ar' ? 'اكتب اسم الدواء أو المنتج المطلوب بشكل دقيق، مع إمكانية إرفاق الوصفة الطبية.' : 'Enter the exact product name or description, and optionally upload a prescription.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+              <div className="w-10 h-10 rounded-xl bg-[#e0f5fc] text-[#00A9E0] flex items-center justify-center flex-shrink-0 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4 12H2"/><path d="M22 12h-2"/><path d="m19.07 4.93-1.41 1.41"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 19.07-1.41-1.41"/><path d="m6.34 6.34-1.41-1.41"/></svg>
+              </div>
+              <div className="space-y-0.5 text-start font-sans">
+                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٢. الإشعار الفوري' : '2. Instant Broadcast'}</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  {lang === 'ar' ? 'يقوم النظام ببث طلبك تلقائياً وبسرعة إلى جميع الصيدليات النشطة في محيطك الجغرافي.' : 'The system automatically broadcasts your request in real-time to all active nearby pharmacies.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+              <div className="w-10 h-10 rounded-xl bg-[#e6fcf9] text-[#30E3CA] flex items-center justify-center flex-shrink-0 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <div className="space-y-0.5 text-start font-sans">
+                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٣. تأكيد التوفر' : '3. Availability Check'}</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  {lang === 'ar' ? 'تستقبل العروض والأسعار المؤكدة من الصيادلة خلال ثوانٍ معدودة مع البدائل المتاحة.' : 'Receive confirmed stock status, pricing, and scientific alternatives from pharmacists in seconds.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+              <div className="w-10 h-10 rounded-xl bg-[#e0f5fc] text-[#00A9E0] flex items-center justify-center flex-shrink-0 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div className="space-y-0.5 text-start font-sans">
+                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٤. الحجز المؤقت' : '4. Secure Booking'}</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  {lang === 'ar' ? 'احجز الدواء المختار بضغطة زر ليتم الاحتفاظ به في الصيدلية خصيصاً لك لمدة ٣٠ دقيقة.' : 'Book your preferred offer instantly to hold the items at the pharmacy for 30 minutes.'}
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        </>
       ) : (
         /* LIVE RESULTS MONITORING PANEL */
         <div className="space-y-5">

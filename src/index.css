@@ -9,21 +9,21 @@
 
 @layer base {
   :root {
-    --color-primary:        #0D6E6E;
-    --color-primary-light:  #14B8B8;
-    --color-primary-hover:  #0B5C5C;
-    --color-accent:         #F59E0B;
-    --color-accent-light:   #FEF3C7;
+    --color-primary:        #00A9E0;
+    --color-primary-light:  #30E3CA;
+    --color-primary-hover:  #0091c2;
+    --color-accent:         #30E3CA;
+    --color-accent-light:   #e6fcf9;
     --color-success:        #10B981;
     --color-danger:         #EF4444;
-    --color-bg:             #F1F5F9;
+    --color-bg:             #F0F8FF;
     --color-card:           #FFFFFF;
-    --color-text:           #0A0F1E;
+    --color-text:           #121E31;
     --color-muted:          #64748B;
-    --font-arabic:          'IBM Plex Sans Arabic', 'Segoe UI', system-ui, sans-serif;
+    --font-arabic:          'Tajawal', 'Segoe UI', system-ui, sans-serif;
     --font-latin:           'Inter', system-ui, sans-serif;
-    --radius-card:          1rem;
-    --radius-modal:         1.5rem;
+    --radius-card:          1.25rem;
+    --radius-modal:         1.75rem;
   }
 
   html[dir="rtl"] body,
