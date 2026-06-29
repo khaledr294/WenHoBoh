@@ -5,29 +5,29 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../lib/AuthContext';
-import { 
-  CustomerRequest, 
-  Pharmacy, 
-  PharmacyResponse, 
-  Reservation, 
-  UserProfile, 
+import {
+  CustomerRequest,
+  Pharmacy,
+  PharmacyResponse,
+  Reservation,
+  UserProfile,
   ProductCategory,
   Language,
   SystemEvent
 } from '../types';
-import { 
-  Phone, 
-  FileText, 
-  Sliders, 
-  Clock, 
-  UploadCloud, 
-  Search, 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  MapPin, 
-  Navigation, 
-  ShieldAlert, 
+import {
+  Phone,
+  FileText,
+  Sliders,
+  Clock,
+  UploadCloud,
+  Search,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  MapPin,
+  Navigation,
+  ShieldAlert,
   Star,
   RefreshCw,
   Bell,
@@ -132,7 +132,7 @@ export default function CustomerPortal({
       );
     }
   }, []);
-  
+
   // Extract user info from Firebase user
   const user = {
     phone: firebaseUser?.phoneNumber || firebaseUser?.email || '',
@@ -152,7 +152,7 @@ export default function CustomerPortal({
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [broadcastProgress, setBroadcastProgress] = useState(0);
   const [showRadiusExpansionPrompt, setShowRadiusExpansionPrompt] = useState(false);
-  
+
   // Rating states
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(5);
@@ -195,7 +195,7 @@ export default function CustomerPortal({
   // Watch for new responses to active request
   useEffect(() => {
     if (activeRequest && responses.length > 0) {
-      const latestResp = responses[responses.length - 1];
+      const latestResp = responses[0];
       if (latestResp.requestId === activeRequest.id) {
         const newNotif = {
           id: latestResp.id,
@@ -346,7 +346,7 @@ export default function CustomerPortal({
   // Book/Reserve product
   const handleReserve = (response: PharmacyResponse) => {
     if (!activeRequest) return;
-    
+
     const newReservation: Reservation = {
       id: 'res-' + crypto.randomUUID().substring(0, 8),
       requestId: activeRequest.id,
@@ -360,7 +360,7 @@ export default function CustomerPortal({
 
     setActiveReservation(newReservation);
     // Timer will auto-calculate from expiresAt in the useEffect
-    
+
     // Update active request to fulfilled
     setActiveRequest({
       ...activeRequest,
@@ -377,7 +377,7 @@ export default function CustomerPortal({
   // Cancel reservation
   const handleCancelReservation = (reason: string) => {
     if (!activeReservation) return;
-    
+
     setActiveReservation({
       ...activeReservation,
       status: 'cancelled_customer'
@@ -478,8 +478,8 @@ export default function CustomerPortal({
                 {lang === 'ar' ? 'تم حجز الدواء بنجاح!' : 'Product Reserved Successfully!'}
               </p>
               <p className="text-slate-600 text-base font-medium mt-1">
-                {lang === 'ar' 
-                  ? 'قم بزيارة الصيدلية خلال ٣٠ دقيقة المحددة. أظهر رقم الحجز للصيدلي لاستلام الدواء.' 
+                {lang === 'ar'
+                  ? 'قم بزيارة الصيدلية خلال ٣٠ دقيقة المحددة. أظهر رقم الحجز للصيدلي لاستلام الدواء.'
                   : 'Please visit the pharmacy within 30 minutes. Present this ticket to the pharmacist.'}
               </p>
             </div>
@@ -494,8 +494,8 @@ export default function CustomerPortal({
                 {lang === 'ar' ? 'تم الاستلام بنجاح!' : 'Successfully Picked Up!'}
               </p>
               <p className="text-slate-600 text-base font-medium mt-1">
-                {lang === 'ar' 
-                  ? 'شكراً لك على استخدام منصة وينهوبه لخدمة اكتشاف الأدوية في عنيزة.' 
+                {lang === 'ar'
+                  ? 'شكراً لك على استخدام منصة وينهوبه لخدمة اكتشاف الأدوية في عنيزة.'
                   : 'Thank you for using Wenhoboh for pharmacy discovery in Unaizah.'}
               </p>
             </div>
@@ -510,8 +510,8 @@ export default function CustomerPortal({
                 {lang === 'ar' ? 'انتهت صلاحية الحجز' : 'Reservation Expired'}
               </p>
               <p className="text-slate-600 text-base font-medium mt-1">
-                {lang === 'ar' 
-                  ? 'مرت ٣٠ دقيقة دون استلام، تم الإفراج عن المنتج للصيدلية.' 
+                {lang === 'ar'
+                  ? 'مرت ٣٠ دقيقة دون استلام، تم الإفراج عن المنتج للصيدلية.'
                   : '30 minutes passed without pickup. The reserved item has been released.'}
               </p>
             </div>
@@ -526,8 +526,8 @@ export default function CustomerPortal({
                 {lang === 'ar' ? 'تم إلغاء الحجز' : 'Reservation Cancelled'}
               </p>
               <p className="text-slate-600 text-base font-medium mt-1">
-                {lang === 'ar' 
-                  ? 'تم إلغاء هذا الحجز. يمكنك إجراء بث جديد إذا لزم الأمر.' 
+                {lang === 'ar'
+                  ? 'تم إلغاء هذا الحجز. يمكنك إجراء بث جديد إذا لزم الأمر.'
                   : 'This reservation has been cancelled. You can make a new broadcast if needed.'}
               </p>
             </div>
@@ -546,7 +546,7 @@ export default function CustomerPortal({
                 {lang === 'ar' ? reservationPharmacy?.addressAr : reservationPharmacy?.addressEn}
               </p>
             </div>
-            
+
             <div className="text-end">
               <span className="inline-flex items-center gap-1 text-base font-medium text-amber-400 bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-800/20 font-mono">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
@@ -581,7 +581,7 @@ export default function CustomerPortal({
                 {lang === 'ar' ? 'السعر المحدد' : 'PRICE QUOTED'}
               </span>
               <span className="font-semibold text-emerald-400 font-mono">
-                {responses.find(r => r.id === activeReservation.responseId)?.price 
+                {responses.find(r => r.id === activeReservation.responseId)?.price
                   ? `${responses.find(r => r.id === activeReservation.responseId)?.price} SAR`
                   : (lang === 'ar' ? 'سعر المعيار الحكومي' : 'Standard SFDA Pricing')}
               </span>
@@ -602,7 +602,7 @@ export default function CustomerPortal({
                   </span>
                 </div>
               </div>
-              <a 
+              <a
                 href={`https://www.google.com/maps/dir/?api=1&origin=${customerCoords?.lat || 26.085},${customerCoords?.lng || 43.990}&destination=${reservationPharmacy.latitude},${reservationPharmacy.longitude}&travelmode=driving`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -660,8 +660,8 @@ export default function CustomerPortal({
                   {lang === 'ar' ? 'تقييم تجربة الاستلام' : 'Rate Your Experience'}
                 </h3>
                 <p className="text-base font-medium text-slate-500 mt-1">
-                  {lang === 'ar' 
-                    ? 'يساعد تقييمك في تحسين جودة صيدليات شبكة وينهوبه بمحافظة عنيزة' 
+                  {lang === 'ar'
+                    ? 'يساعد تقييمك في تحسين جودة صيدليات شبكة وينهوبه بمحافظة عنيزة'
                     : 'Your rating builds reliability for pharmacy network in Unaizah'}
                 </p>
               </div>
@@ -675,8 +675,8 @@ export default function CustomerPortal({
                       onClick={() => setSelectedRating(star)}
                       className="p-1 transition duration-100 hover:scale-125"
                     >
-                      <Star 
-                        className={`w-8 h-8 ${selectedRating >= star ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`} 
+                      <Star
+                        className={`w-8 h-8 ${selectedRating >= star ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`}
                       />
                     </button>
                   ))}
@@ -710,407 +710,407 @@ export default function CustomerPortal({
     return (
       <div className="space-y-6">
         {/* Customer Header */}
-      <div className="flex justify-between items-center border-b border-slate-200 pb-4">
-        <div>
-          <span className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-slate-500 font-mono">
-            {lang === 'ar' ? 'مرحبًا بك' : 'WELCOME'}
-          </span>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight mt-1">
-            {user.name}
-          </h2>
-        </div>
-      </div>
-
-      {/* Main Form (Hidden if there's an active request awaiting results) */}
-      {!activeRequest ? (
-        <>
-        <form onSubmit={handleBroadcast} className="space-y-4">
+        <div className="flex justify-between items-center border-b border-slate-200 pb-4">
           <div>
-            <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
-              {lang === 'ar' ? 'اسم الدواء أو المنتج المطلوب' : 'Product Name / Description'}
-            </label>
-            <div className="relative">
-              <Search className="absolute start-4 top-3 text-slate-500 w-4 h-4" />
-              <input
-                type="text"
-                placeholder={lang === 'ar' ? 'أدخل الدواء بالتفصيل (مثل: أنسولين لانتوس)' : 'Enter exact product name...'}
-                required
-                value={productName}
-                onChange={e => setProductName(e.target.value)}
-                className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl ps-11 pe-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
-              />
-            </div>
+            <span className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-slate-500 font-mono">
+              {lang === 'ar' ? 'مرحبًا بك' : 'WELCOME'}
+            </span>
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight mt-1">
+              {user.name}
+            </h2>
           </div>
+        </div>
 
-          <div className="grid gap-3">
-            <div>
-              <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-1.5 font-mono">
-                {lang === 'ar' ? 'نطاق البحث الجغرافي' : 'Search Radius'}
-              </label>
-              <select
-                value={radiusKm}
-                onChange={e => setRadiusKm(Number(e.target.value))}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 transition font-mono"
-              >
-                <option value={3}>{lang === 'ar' ? '٣ كم (محيطك المباشر)' : '3 km (Local)'}</option>
-                <option value={5}>{lang === 'ar' ? '٥ كم (أغلب المدينة)' : '5 km (Moderate)'}</option>
-                <option value={10}>{lang === 'ar' ? '١٠ كم (عنيزة بالكامل)' : '10 km (Citywide)'}</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Prescription Attachment Mock */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-base font-medium font-semibold text-slate-900">
-                {lang === 'ar' ? 'صورة الأصناف المطلوبة' : 'Prescription Photo (Rx)'}
-              </span>
-              <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
-                {lang === 'ar' ? 'الوصفة الطبية (Rx) موصى به للأدوية المقيدة' : 'Recommended for Rx'}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {prescriptionImages.length < 3 && (
-                <label className="w-full border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-xl py-4 flex flex-col items-center justify-center gap-1.5 transition group cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      if (files.length === 0) return;
-                      
-                      const remainingSlots = 3 - prescriptionImages.length;
-                      const filesToProcess = files.slice(0, remainingSlots);
-                      
-                      filesToProcess.forEach((file: File) => {
-                        if (file.size > 2 * 1024 * 1024) {
-                          alert(lang === 'ar' ? 'حجم الصورة يجب أن لا يتجاوز ٢ ميغابايت' : 'Image size must not exceed 2MB');
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setPrescriptionImages(prev => [...prev, reader.result as string]);
-                        };
-                        reader.readAsDataURL(file);
-                      });
-                      
-                      onLogEvent(
-                        'prescription_uploaded',
-                        `أرفق العميل ${filesToProcess.length} صورة وصفة طبية`,
-                        `Customer attached ${filesToProcess.length} prescription image(s)`
-                      );
-                    }}
-                  />
-                  <UploadCloud className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
-                  <span className="text-[10px] text-slate-500 text-center px-4">
-                    {lang === 'ar' ? 'انقر لإرفاق صورة الوصفة (الحد الأقصى ٣ صور)' : 'Click to upload prescription (Max 3 images)'}
-                  </span>
+        {/* Main Form (Hidden if there's an active request awaiting results) */}
+        {!activeRequest ? (
+          <>
+            <form onSubmit={handleBroadcast} className="space-y-4">
+              <div>
+                <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
+                  {lang === 'ar' ? 'اسم الدواء أو المنتج المطلوب' : 'Product Name / Description'}
                 </label>
-              )}
+                <div className="relative">
+                  <Search className="absolute start-4 top-3 text-slate-500 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder={lang === 'ar' ? 'أدخل الدواء بالتفصيل (مثل: أنسولين لانتوس)' : 'Enter exact product name...'}
+                    required
+                    value={productName}
+                    onChange={e => setProductName(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl ps-11 pe-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
+                  />
+                </div>
+              </div>
 
-              {prescriptionImages.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {prescriptionImages.map((imgUrl, idx) => (
-                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square">
-                      <img src={imgUrl} alt={`Prescription ${idx + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setPrescriptionImages(prev => prev.filter((_, i) => i !== idx))}
-                        className="absolute top-1 end-1 bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title={lang === 'ar' ? 'إزالة' : 'Remove'}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
+              <div className="grid gap-3">
+                <div>
+                  <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-1.5 font-mono">
+                    {lang === 'ar' ? 'نطاق البحث الجغرافي' : 'Search Radius'}
+                  </label>
+                  <select
+                    value={radiusKm}
+                    onChange={e => setRadiusKm(Number(e.target.value))}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base font-medium text-slate-900 focus:outline-none focus:border-emerald-500 transition font-mono"
+                  >
+                    <option value={3}>{lang === 'ar' ? '٣ كم (محيطك المباشر)' : '3 km (Local)'}</option>
+                    <option value={5}>{lang === 'ar' ? '٥ كم (أغلب المدينة)' : '5 km (Moderate)'}</option>
+                    <option value={10}>{lang === 'ar' ? '١٠ كم (عنيزة بالكامل)' : '10 km (Citywide)'}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Prescription Attachment Mock */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-base font-medium font-semibold text-slate-900">
+                    {lang === 'ar' ? 'صورة الأصناف المطلوبة' : 'Prescription Photo (Rx)'}
+                  </span>
+                  <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
+                    {lang === 'ar' ? 'الوصفة الطبية (Rx) موصى به للأدوية المقيدة' : 'Recommended for Rx'}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {prescriptionImages.length < 3 && (
+                    <label className="w-full border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-xl py-4 flex flex-col items-center justify-center gap-1.5 transition group cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (files.length === 0) return;
+
+                          const remainingSlots = 3 - prescriptionImages.length;
+                          const filesToProcess = files.slice(0, remainingSlots);
+
+                          filesToProcess.forEach((file: File) => {
+                            if (file.size > 2 * 1024 * 1024) {
+                              alert(lang === 'ar' ? 'حجم الصورة يجب أن لا يتجاوز ٢ ميغابايت' : 'Image size must not exceed 2MB');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setPrescriptionImages(prev => [...prev, reader.result as string]);
+                            };
+                            reader.readAsDataURL(file);
+                          });
+
+                          onLogEvent(
+                            'prescription_uploaded',
+                            `أرفق العميل ${filesToProcess.length} صورة وصفة طبية`,
+                            `Customer attached ${filesToProcess.length} prescription image(s)`
+                          );
+                        }}
+                      />
+                      <UploadCloud className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                      <span className="text-[10px] text-slate-500 text-center px-4">
+                        {lang === 'ar' ? 'انقر لإرفاق صورة الوصفة (الحد الأقصى ٣ صور)' : 'Click to upload prescription (Max 3 images)'}
+                      </span>
+                    </label>
+                  )}
+
+                  {prescriptionImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {prescriptionImages.map((imgUrl, idx) => (
+                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square">
+                          <img src={imgUrl} alt={`Prescription ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setPrescriptionImages(prev => prev.filter((_, i) => i !== idx))}
+                            className="absolute top-1 end-1 bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            title={lang === 'ar' ? 'إزالة' : 'Remove'}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
+                  {lang === 'ar' ? 'ملاحظات إضافية للصيدلي (اختياري)' : 'Additional Notes (Optional)'}
+                </label>
+                <textarea
+                  placeholder={lang === 'ar' ? 'مثال: أحتاج علبتين، أو اسأل عن توفر التأمين...' : 'e.g., need 2 boxes...'}
+                  rows={2}
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
+                />
+              </div>
+
+              <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition">
+                <input
+                  type="checkbox"
+                  checked={acceptsAlternative}
+                  onChange={(e) => setAcceptsAlternative(e.target.checked)}
+                  className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+                />
+                <span className="text-base font-semibold text-slate-700">
+                  {lang === 'ar' ? 'أقبل ببديل علمي بنفس المادة الفعالة' : 'Accept scientific alternative with same active ingredient'}
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={isBroadcasting}
+                className="w-full bg-gradient-to-r from-[#00A9E0] to-[#30E3CA] hover:from-[#0091c2] hover:to-[#28cbbe] text-white font-semibold rounded-xl py-3 shadow-lg shadow-[#00A9E0]/15 active:scale-98 transition duration-150 flex items-center justify-center gap-2 text-base font-medium cursor-pointer"
+              >
+                {isBroadcasting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    {lang === 'ar' ? `جاري البث (${broadcastProgress}%)...` : `Broadcasting (${broadcastProgress}%)...`}
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4" />
+                    {lang === 'ar' ? 'وينهوبه 📡' : 'WENHOBOH 📡'}
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* How It Works Guide Section (Matching Brand Identity) */}
+            <div className="bg-[#FFFFFF] border border-[#00A9E0]/20 rounded-3xl p-5 md:p-6 shadow-sm space-y-4">
+              <h3 className="text-lg font-black text-[#121E31] flex items-center gap-2 border-b border-slate-100 pb-2">
+                <span className="w-2 h-5 rounded bg-gradient-to-b from-[#30E3CA] to-[#00A9E0]" />
+                {lang === 'ar' ? 'كيف يعمل وينهوبه؟' : 'How Wenhoboh Works'}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Step 1 */}
+                <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+                  <div className="w-10 h-10 rounded-xl bg-[#e6fcf9] text-[#30E3CA] flex items-center justify-center flex-shrink-0 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" /><path d="m8.5 8.5 7 7" /></svg>
+                  </div>
+                  <div className="space-y-0.5 text-start font-sans">
+                    <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '١. اطلب الدواء' : '1. Order Item'}</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                      {lang === 'ar' ? 'اكتب اسم الدواء أو المنتج المطلوب بشكل دقيق، مع إمكانية إرفاق الوصفة الطبية.' : 'Enter the exact product name or description, and optionally upload a prescription.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+                  <div className="w-10 h-10 rounded-xl bg-[#e0f5fc] text-[#00A9E0] flex items-center justify-center flex-shrink-0 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="M4 12H2" /><path d="M22 12h-2" /><path d="m19.07 4.93-1.41 1.41" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 19.07-1.41-1.41" /><path d="m6.34 6.34-1.41-1.41" /></svg>
+                  </div>
+                  <div className="space-y-0.5 text-start font-sans">
+                    <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٢. الإشعار الفوري' : '2. Instant Broadcast'}</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                      {lang === 'ar' ? 'يقوم النظام ببث طلبك تلقائياً وبسرعة إلى جميع الصيدليات النشطة في محيطك الجغرافي.' : 'The system automatically broadcasts your request in real-time to all active nearby pharmacies.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+                  <div className="w-10 h-10 rounded-xl bg-[#e6fcf9] text-[#30E3CA] flex items-center justify-center flex-shrink-0 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" /><path d="m9 12 2 2 4-4" /></svg>
+                  </div>
+                  <div className="space-y-0.5 text-start font-sans">
+                    <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٣. تأكيد التوفر' : '3. Availability Check'}</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                      {lang === 'ar' ? 'تستقبل العروض والأسعار المؤكدة من الصيادلة خلال ثوانٍ معدودة مع البدائل المتاحة.' : 'Receive confirmed stock status, pricing, and scientific alternatives from pharmacists in seconds.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 4 */}
+                <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
+                  <div className="w-10 h-10 rounded-xl bg-[#e0f5fc] text-[#00A9E0] flex items-center justify-center flex-shrink-0 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                  </div>
+                  <div className="space-y-0.5 text-start font-sans">
+                    <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٤. الحجز المؤقت' : '4. Secure Booking'}</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                      {lang === 'ar' ? 'احجز الدواء المختار بضغطة زر ليتم الاحتفاظ به في الصيدلية خصيصاً لك لمدة ٣٠ دقيقة.' : 'Book your preferred offer instantly to hold the items at the pharmacy for 30 minutes.'}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </>
+        ) : (
+          /* LIVE RESULTS MONITORING PANEL */
+          <div className="space-y-5">
+            {/* Active Request Overview Card */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-900/50 px-2 py-0.5 rounded-full font-mono font-bold uppercase tracking-wider">
+                    {lang === 'ar' ? 'بث جاري حالياً' : 'LIVE BROADCAST'}
+                  </span>
+                  <h3 className="text-base font-bold text-slate-900 mt-1.5">
+                    {activeRequest.productName}
+                  </h3>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setActiveRequest(null);
+                    setShowRadiusExpansionPrompt(false);
+                    onLogEvent(
+                      'request_created',
+                      `ألغى العميل طلب البحث الحالي`,
+                      `Customer cancelled the active search broadcast`
+                    );
+                  }}
+                  className="text-base font-medium text-red-400 hover:underline"
+                >
+                  {lang === 'ar' ? 'إلغاء البحث' : 'Stop Search'}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between text-base font-medium text-slate-500 border-t border-slate-200/60 pt-3">
+                <span>{lang === 'ar' ? `نطاق البحث: ${activeRequest.radiusKm}كم` : `Radius: ${activeRequest.radiusKm}km`}</span>
+                <span className="font-mono text-[11px]">{activeRequest.createdAt}</span>
+              </div>
+            </div>
+
+            {/* Real-time Streaming Response Status */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-medium font-semibold uppercase tracking-wider text-slate-600 font-mono">
+                  {lang === 'ar' ? 'الردود المستلمة من الصيدليات' : 'STREAMING PHARMACY RESPONSES'}
+                </h3>
+
+                <span className="text-base font-medium text-slate-500 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  {lang === 'ar'
+                    ? `${activeRequestResponses.length} صيدليات أجابت`
+                    : `${activeRequestResponses.length} replied`}
+                </span>
+              </div>
+
+              {/* List of responses */}
+              {activeRequestResponses.length === 0 ? (
+                <div className="border border-slate-200 rounded-2xl p-6 text-center space-y-3 bg-slate-50/10">
+                  <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center mx-auto animate-spin">
+                    <RefreshCw className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <p className="text-base font-medium text-slate-500">
+                    {lang === 'ar'
+                      ? 'في انتظار الصيدليات للاستعلام عن المخزون... (استخدم محاكي الصيدلية للرد!)'
+                      : 'Awaiting pharmacies to query their stock... (Try responding from the Pharmacy tab!)'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {activeRequestResponses.map((res) => (
+                    <div
+                      key={res.id}
+                      className="bg-slate-50 border border-slate-200 hover:border-slate-300 p-4 rounded-2xl space-y-3 transition"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="text-base font-medium font-bold text-slate-900">
+                            {getPharmacyName(res.pharmacyId, lang)}
+                          </h4>
+                          <span className="text-[10px] text-slate-500 block mt-0.5">
+                            📍 {getPharmacyDistance(res.pharmacyId)} كم • {lang === 'ar' ? 'عنيزة' : 'Unaizah'}
+                          </span>
+                        </div>
+
+                        {/* Response badge */}
+                        <div>
+                          {res.status === 'available' && (
+                            <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800/50 rounded-full text-[10px] font-bold">
+                              {lang === 'ar' ? 'متوفر' : 'Available'}
+                            </span>
+                          )}
+                          {res.status === 'not_available' && (
+                            <span className="px-2 py-0.5 bg-red-950 text-red-400 border border-red-800/50 rounded-full text-[10px] font-bold">
+                              {lang === 'ar' ? 'غير متوفر' : 'Out of Stock'}
+                            </span>
+                          )}
+                          {res.status === 'alternative' && (
+                            <span className="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800/50 rounded-full text-[10px] font-bold">
+                              {lang === 'ar' ? 'بديل متوفر' : 'Alternative'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Price and details display */}
+                      {(res.status === 'available' || res.status === 'alternative') && (
+                        <div className="bg-white p-3 rounded-xl border border-slate-200/40 text-base font-medium flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                          <div className="space-y-1">
+                            {res.status === 'alternative' && (
+                              <p className="text-sm font-semibold text-amber-500">
+                                {lang === 'ar' ? `البديل المقترح: ${res.alternativeName}` : `Suggested Alt: ${res.alternativeName}`}
+                              </p>
+                            )}
+                            {res.status === 'available' && res.confirmedProductName && (
+                              <p className="text-sm font-semibold text-emerald-600">
+                                {lang === 'ar' ? `المنتج المؤكد: ${res.confirmedProductName}` : `Confirmed Item: ${res.confirmedProductName}`}
+                              </p>
+                            )}
+                            {res.notes && (
+                              <p className="text-xs text-slate-500">
+                                "{res.notes}"
+                              </p>
+                            )}
+                            {res.alternativeImage && (
+                              <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 max-w-[120px] aspect-square shadow-sm">
+                                <img src={res.alternativeImage} alt="Alternative product" className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-end font-mono text-emerald-450 font-bold text-lg self-end sm:self-center shrink-0">
+                            {res.price ? `${res.price} SAR` : (lang === 'ar' ? 'تسعير رسمي' : 'Official Pricing')}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Book Reservation button */}
+                      {res.status !== 'not_available' && (
+                        <button
+                          onClick={() => handleReserve(res)}
+                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-xl text-base font-medium transition duration-150"
+                        >
+                          {lang === 'ar' ? 'احجز هذا واستلم خلال ٣٠ دقيقة ⏱️' : 'Reserve and Hold for 30 Mins ⏱️'}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          </div>
 
-          <div>
-            <label className="block text-base font-medium font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
-              {lang === 'ar' ? 'ملاحظات إضافية للصيدلي (اختياري)' : 'Additional Notes (Optional)'}
-            </label>
-            <textarea
-              placeholder={lang === 'ar' ? 'مثال: أحتاج علبتين، أو اسأل عن توفر التأمين...' : 'e.g., need 2 boxes...'}
-              rows={2}
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-base font-medium text-slate-900 placeholder-slate-600 focus:outline-none transition"
-            />
-          </div>
-
-          <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition">
-            <input 
-              type="checkbox"
-              checked={acceptsAlternative}
-              onChange={(e) => setAcceptsAlternative(e.target.checked)}
-              className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
-            />
-            <span className="text-base font-semibold text-slate-700">
-              {lang === 'ar' ? 'أقبل ببديل علمي بنفس المادة الفعالة' : 'Accept scientific alternative with same active ingredient'}
-            </span>
-          </label>
-
-          <button
-            type="submit"
-            disabled={isBroadcasting}
-            className="w-full bg-gradient-to-r from-[#00A9E0] to-[#30E3CA] hover:from-[#0091c2] hover:to-[#28cbbe] text-white font-semibold rounded-xl py-3 shadow-lg shadow-[#00A9E0]/15 active:scale-98 transition duration-150 flex items-center justify-center gap-2 text-base font-medium cursor-pointer"
-          >
-            {isBroadcasting ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                {lang === 'ar' ? `جاري البث (${broadcastProgress}%)...` : `Broadcasting (${broadcastProgress}%)...`}
-              </>
-            ) : (
-              <>
-                <Search className="w-4 h-4" />
-                {lang === 'ar' ? 'البث والبحث عن الدواء 📡' : 'Broadcast Request 📡'}
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* How It Works Guide Section (Matching Brand Identity) */}
-        <div className="bg-[#FFFFFF] border border-[#00A9E0]/20 rounded-3xl p-5 md:p-6 shadow-sm space-y-4">
-          <h3 className="text-lg font-black text-[#121E31] flex items-center gap-2 border-b border-slate-100 pb-2">
-            <span className="w-2 h-5 rounded bg-gradient-to-b from-[#30E3CA] to-[#00A9E0]" />
-            {lang === 'ar' ? 'كيف يعمل وينهوبه؟' : 'How Wenhoboh Works'}
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* Step 1 */}
-            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
-              <div className="w-10 h-10 rounded-xl bg-[#e6fcf9] text-[#30E3CA] flex items-center justify-center flex-shrink-0 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
-              </div>
-              <div className="space-y-0.5 text-start font-sans">
-                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '١. اطلب الدواء' : '1. Order Item'}</h4>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  {lang === 'ar' ? 'اكتب اسم الدواء أو المنتج المطلوب بشكل دقيق، مع إمكانية إرفاق الوصفة الطبية.' : 'Enter the exact product name or description, and optionally upload a prescription.'}
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
-              <div className="w-10 h-10 rounded-xl bg-[#e0f5fc] text-[#00A9E0] flex items-center justify-center flex-shrink-0 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4 12H2"/><path d="M22 12h-2"/><path d="m19.07 4.93-1.41 1.41"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 19.07-1.41-1.41"/><path d="m6.34 6.34-1.41-1.41"/></svg>
-              </div>
-              <div className="space-y-0.5 text-start font-sans">
-                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٢. الإشعار الفوري' : '2. Instant Broadcast'}</h4>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  {lang === 'ar' ? 'يقوم النظام ببث طلبك تلقائياً وبسرعة إلى جميع الصيدليات النشطة في محيطك الجغرافي.' : 'The system automatically broadcasts your request in real-time to all active nearby pharmacies.'}
-                </p>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
-              <div className="w-10 h-10 rounded-xl bg-[#e6fcf9] text-[#30E3CA] flex items-center justify-center flex-shrink-0 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
-              </div>
-              <div className="space-y-0.5 text-start font-sans">
-                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٣. تأكيد التوفر' : '3. Availability Check'}</h4>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  {lang === 'ar' ? 'تستقبل العروض والأسعار المؤكدة من الصيادلة خلال ثوانٍ معدودة مع البدائل المتاحة.' : 'Receive confirmed stock status, pricing, and scientific alternatives from pharmacists in seconds.'}
-                </p>
-              </div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="flex gap-3 items-start p-3 rounded-2xl hover:bg-[#F0F8FF] transition duration-150">
-              <div className="w-10 h-10 rounded-xl bg-[#e0f5fc] text-[#00A9E0] flex items-center justify-center flex-shrink-0 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div className="space-y-0.5 text-start font-sans">
-                <h4 className="text-sm font-bold text-[#121E31]">{lang === 'ar' ? '٤. الحجز المؤقت' : '4. Secure Booking'}</h4>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  {lang === 'ar' ? 'احجز الدواء المختار بضغطة زر ليتم الاحتفاظ به في الصيدلية خصيصاً لك لمدة ٣٠ دقيقة.' : 'Book your preferred offer instantly to hold the items at the pharmacy for 30 minutes.'}
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-        </>
-      ) : (
-        /* LIVE RESULTS MONITORING PANEL */
-        <div className="space-y-5">
-          {/* Active Request Overview Card */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-900/50 px-2 py-0.5 rounded-full font-mono font-bold uppercase tracking-wider">
-                  {lang === 'ar' ? 'بث جاري حالياً' : 'LIVE BROADCAST'}
-                </span>
-                <h3 className="text-base font-bold text-slate-900 mt-1.5">
-                  {activeRequest.productName}
-                </h3>
-              </div>
-              
-              <button
-                onClick={() => {
-                  setActiveRequest(null);
-                  setShowRadiusExpansionPrompt(false);
-                  onLogEvent(
-                    'request_created',
-                    `ألغى العميل طلب البحث الحالي`,
-                    `Customer cancelled the active search broadcast`
-                  );
-                }}
-                className="text-base font-medium text-red-400 hover:underline"
-              >
-                {lang === 'ar' ? 'إلغاء البحث' : 'Stop Search'}
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between text-base font-medium text-slate-500 border-t border-slate-200/60 pt-3">
-              <span>{lang === 'ar' ? `نطاق البحث: ${activeRequest.radiusKm}كم` : `Radius: ${activeRequest.radiusKm}km`}</span>
-              <span className="font-mono text-[11px]">{activeRequest.createdAt}</span>
-            </div>
-          </div>
-
-          {/* Real-time Streaming Response Status */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="text-base font-medium font-semibold uppercase tracking-wider text-slate-600 font-mono">
-                {lang === 'ar' ? 'الردود المستلمة من الصيدليات' : 'STREAMING PHARMACY RESPONSES'}
-              </h3>
-              
-              <span className="text-base font-medium text-slate-500 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                {lang === 'ar' 
-                  ? `${activeRequestResponses.length} صيدليات أجابت` 
-                  : `${activeRequestResponses.length} replied`}
-              </span>
-            </div>
-
-            {/* List of responses */}
-            {activeRequestResponses.length === 0 ? (
-              <div className="border border-slate-200 rounded-2xl p-6 text-center space-y-3 bg-slate-50/10">
-                <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center mx-auto animate-spin">
-                  <RefreshCw className="w-4 h-4 text-emerald-400" />
+            {/* Radius Expansion Prompt Overlay / Banner */}
+            {showRadiusExpansionPrompt && activeRequest.radiusKm < 50 && (
+              <div className="p-4 bg-slate-50 border border-amber-500/20 rounded-2xl space-y-2.5 shadow-md">
+                <div className="flex gap-2 items-start text-base font-medium text-amber-400">
+                  <Sliders className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p>
+                    {lang === 'ar'
+                      ? 'هل تود توسيع دائرة البحث؟ لم تستجب بعض الصيدليات القريبة، يمكنك الاستعلام من نطاق أوسع.'
+                      : 'Would you like to expand your search? No nearby response yet, let\'s query a wider radius.'}
+                  </p>
                 </div>
-                <p className="text-base font-medium text-slate-500">
-                  {lang === 'ar' 
-                    ? 'في انتظار الصيدليات للاستعلام عن المخزون... (استخدم محاكي الصيدلية للرد!)' 
-                    : 'Awaiting pharmacies to query their stock... (Try responding from the Pharmacy tab!)'}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activeRequestResponses.map((res) => (
-                  <div 
-                    key={res.id} 
-                    className="bg-slate-50 border border-slate-200 hover:border-slate-300 p-4 rounded-2xl space-y-3 transition"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="text-base font-medium font-bold text-slate-900">
-                          {getPharmacyName(res.pharmacyId, lang)}
-                        </h4>
-                        <span className="text-[10px] text-slate-500 block mt-0.5">
-                          📍 {getPharmacyDistance(res.pharmacyId)} كم • {lang === 'ar' ? 'عنيزة' : 'Unaizah'}
-                        </span>
-                      </div>
-
-                      {/* Response badge */}
-                      <div>
-                        {res.status === 'available' && (
-                          <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800/50 rounded-full text-[10px] font-bold">
-                            {lang === 'ar' ? 'متوفر' : 'Available'}
-                          </span>
-                        )}
-                        {res.status === 'not_available' && (
-                          <span className="px-2 py-0.5 bg-red-950 text-red-400 border border-red-800/50 rounded-full text-[10px] font-bold">
-                            {lang === 'ar' ? 'غير متوفر' : 'Out of Stock'}
-                          </span>
-                        )}
-                        {res.status === 'alternative' && (
-                          <span className="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800/50 rounded-full text-[10px] font-bold">
-                            {lang === 'ar' ? 'بديل متوفر' : 'Alternative'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Price and details display */}
-                    {(res.status === 'available' || res.status === 'alternative') && (
-                      <div className="bg-white p-3 rounded-xl border border-slate-200/40 text-base font-medium flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <div className="space-y-1">
-                          {res.status === 'alternative' && (
-                            <p className="text-sm font-semibold text-amber-500">
-                              {lang === 'ar' ? `البديل المقترح: ${res.alternativeName}` : `Suggested Alt: ${res.alternativeName}`}
-                            </p>
-                          )}
-                          {res.status === 'available' && res.confirmedProductName && (
-                            <p className="text-sm font-semibold text-emerald-600">
-                              {lang === 'ar' ? `المنتج المؤكد: ${res.confirmedProductName}` : `Confirmed Item: ${res.confirmedProductName}`}
-                            </p>
-                          )}
-                          {res.notes && (
-                            <p className="text-xs text-slate-500">
-                              "{res.notes}"
-                            </p>
-                          )}
-                          {res.alternativeImage && (
-                            <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 max-w-[120px] aspect-square shadow-sm">
-                              <img src={res.alternativeImage} alt="Alternative product" className="w-full h-full object-cover" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-end font-mono text-emerald-450 font-bold text-lg self-end sm:self-center shrink-0">
-                          {res.price ? `${res.price} SAR` : (lang === 'ar' ? 'تسعير رسمي' : 'Official Pricing')}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Book Reservation button */}
-                    {res.status !== 'not_available' && (
-                      <button
-                        onClick={() => handleReserve(res)}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-3 rounded-xl text-base font-medium transition duration-150"
-                      >
-                        {lang === 'ar' ? 'احجز هذا واستلم خلال ٣٠ دقيقة ⏱️' : 'Reserve and Hold for 30 Mins ⏱️'}
-                      </button>
-                    )}
-                  </div>
-                ))}
+                <button
+                  type="button"
+                  onClick={handleExpandRadius}
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-1.5 px-3 rounded-lg text-base font-medium transition"
+                >
+                  {lang === 'ar' ? `توسيع النطاق إلى ${radiusKm === 3 ? '٥' : '١٠'} كم` : `Expand to ${radiusKm === 3 ? '5' : '10'} km`}
+                </button>
               </div>
             )}
           </div>
-
-          {/* Radius Expansion Prompt Overlay / Banner */}
-          {showRadiusExpansionPrompt && activeRequest.radiusKm < 50 && (
-            <div className="p-4 bg-slate-50 border border-amber-500/20 rounded-2xl space-y-2.5 shadow-md">
-              <div className="flex gap-2 items-start text-base font-medium text-amber-400">
-                <Sliders className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                <p>
-                  {lang === 'ar' 
-                    ? 'هل تود توسيع دائرة البحث؟ لم تستجب بعض الصيدليات القريبة، يمكنك الاستعلام من نطاق أوسع.' 
-                    : 'Would you like to expand your search? No nearby response yet, let\'s query a wider radius.'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleExpandRadius}
-                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-1.5 px-3 rounded-lg text-base font-medium transition"
-              >
-                {lang === 'ar' ? `توسيع النطاق إلى ${radiusKm === 3 ? '٥' : '١٠'} كم` : `Expand to ${radiusKm === 3 ? '5' : '10'} km`}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     );
   };
 
@@ -1130,7 +1130,7 @@ export default function CustomerPortal({
         ) : (
           <div className="space-y-3">
             {notifications.map((notif, idx) => (
-              <div 
+              <div
                 key={`${notif.id}-${idx}`}
                 className={`p-4 rounded-2xl border transition-colors ${!notif.read ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}
                 onClick={() => {
@@ -1158,7 +1158,7 @@ export default function CustomerPortal({
 
   return (
     <div className="flex flex-col h-[700px] md:h-full relative overflow-hidden bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl font-sans text-slate-900">
-      
+
       {/* Toast Notification (Simulated Push Notif) */}
       <div className={`absolute top-4 left-4 right-4 z-50 transition-all duration-500 transform ${toastNotif ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex items-start gap-3">
@@ -1183,7 +1183,7 @@ export default function CustomerPortal({
 
       {/* PWA Bottom Navigation Bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 pb-6 flex justify-around items-center z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
-        <button 
+        <button
           onClick={() => setActiveTab('home')}
           className={`flex flex-col items-center gap-1.5 transition-colors ${activeTab === 'home' ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
         >
@@ -1191,7 +1191,7 @@ export default function CustomerPortal({
           <span className="text-[10px] font-bold uppercase tracking-wider">{lang === 'ar' ? 'الرئيسية' : 'Home'}</span>
         </button>
 
-        <button 
+        <button
           onClick={() => setActiveTab('ticket')}
           className={`flex flex-col items-center gap-1.5 transition-colors relative ${activeTab === 'ticket' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
         >
@@ -1200,7 +1200,7 @@ export default function CustomerPortal({
           <span className="text-[10px] font-bold uppercase tracking-wider">{lang === 'ar' ? 'تذكرتي' : 'Ticket'}</span>
         </button>
 
-        <button 
+        <button
           onClick={() => setActiveTab('notifications')}
           className={`flex flex-col items-center gap-1.5 transition-colors relative ${activeTab === 'notifications' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600'}`}
         >

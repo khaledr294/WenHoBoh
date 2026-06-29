@@ -29,7 +29,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 interface PharmacyPortalProps {
@@ -69,28 +69,25 @@ export default function PharmacyPortal({
     operatingHours: ''
   });
 
-  // Load pharmacy status for current user
+  // Load pharmacy status for current user in real-time
   useEffect(() => {
-    const fetchPharmacyStatus = async () => {
-      if (!user) return;
-      try {
-        const docSnap = await getDoc(doc(db, 'pharmacies', user.uid));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.status === 'active') {
-            setRegistrationStatus('approved');
-          } else {
-            setRegistrationStatus('pending_approval');
-          }
+    if (!user) return;
+    const unsub = onSnapshot(doc(db, 'pharmacies', user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.status === 'active') {
+          setRegistrationStatus('approved');
         } else {
-          setRegistrationStatus('needs_registration');
+          setRegistrationStatus('pending_approval');
         }
-      } catch (err) {
-        console.error(err);
+      } else {
         setRegistrationStatus('needs_registration');
       }
-    };
-    fetchPharmacyStatus();
+    }, (err) => {
+      console.error(err);
+      setRegistrationStatus('needs_registration');
+    });
+    return unsub;
   }, [user]);
 
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
@@ -225,13 +222,23 @@ export default function PharmacyPortal({
       requestId: activeRequest.id,
       pharmacyId: activePharmacy.id,
       status,
-      alternativeName: status === 'alternative' ? alternativeName : undefined,
-      confirmedProductName: status === 'available' ? confirmedProductName : undefined,
-      price: responsePrice,
-      notes: notesInput.trim() || undefined,
-      alternativeImage: status === 'alternative' ? (alternativeImage || undefined) : undefined,
       respondedAt: new Date().toISOString()
     };
+
+    if (status === 'alternative') {
+      if (alternativeName) newResponse.alternativeName = alternativeName;
+      if (alternativeImage) newResponse.alternativeImage = alternativeImage;
+    }
+    if (status === 'available') {
+      if (confirmedProductName) newResponse.confirmedProductName = confirmedProductName;
+    }
+    if (responsePrice !== undefined && !isNaN(responsePrice)) {
+      newResponse.price = responsePrice;
+    }
+    const trimmedNotes = notesInput.trim();
+    if (trimmedNotes) {
+      newResponse.notes = trimmedNotes;
+    }
 
     addResponse(newResponse);
 
@@ -245,13 +252,13 @@ export default function PharmacyPortal({
     setShowAvailableForm(false);
 
     const statusTextAr = status === 'available' 
-      ? `متوفر (${confirmedProductName})` 
+      ? `متوفر (${confirmedProductName || activeRequest.productName})` 
       : status === 'not_available' 
         ? 'غير متوفر' 
         : `بديل (${alternativeName})`;
     
     const statusTextEn = status === 'available' 
-      ? `Available (${confirmedProductName})` 
+      ? `Available (${confirmedProductName || activeRequest.productName})` 
       : status === 'not_available' 
         ? 'Out of Stock' 
         : `Alternative (${alternativeName})`;

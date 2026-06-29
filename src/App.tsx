@@ -155,6 +155,18 @@ export default function App() {
 
   // Set up Firestore Listeners on Mount
   useEffect(() => {
+    let unsubResponses: (() => void) | null = null;
+
+    // When activeRequest changes, re-subscribe with the new requestId
+    const handleRequestChange = (req: CustomerRequest | null) => {
+      if (unsubResponses) {
+        unsubResponses();
+      }
+      unsubResponses = listenToResponses(req?.id ?? null, (list) => {
+        setResponses(list);
+      });
+    };
+
     // 1. Listen to pharmacies
     const unsubPharmacies = listenToPharmacies((list) => {
       setPharmacies(list);
@@ -163,20 +175,8 @@ export default function App() {
     // 2. Listen to activeRequest
     const unsubRequest = listenToActiveRequest((req) => {
       setActiveRequest(req);
+      handleRequestChange(req);
     });
-
-    // 3. Listen to responses — scoped to active request
-    let unsubResponses = listenToResponses(null, (list) => {
-      setResponses(list);
-    });
-
-    // When activeRequest changes, re-subscribe with the new requestId
-    const handleRequestChange = (req: CustomerRequest | null) => {
-      unsubResponses();
-      unsubResponses = listenToResponses(req?.id ?? null, (list) => {
-        setResponses(list);
-      });
-    };
 
     // 4. Listen to activeReservation
     const unsubReservation = listenToActiveReservation((res) => {
@@ -199,7 +199,9 @@ export default function App() {
     return () => {
       unsubPharmacies();
       unsubRequest();
-      unsubResponses();
+      if (unsubResponses) {
+        unsubResponses();
+      }
       unsubReservation();
       unsubEvents();
       unsubAllRequests();
