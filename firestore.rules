@@ -27,7 +27,7 @@ service cloud.firestore {
     match /customerRequests/{requestId} {
       allow read: if request.auth != null || isAdmin();
       allow create: if request.auth != null;
-      allow update: if (request.auth != null && request.auth.uid == resource.data.customerId) || isAdmin();
+      allow update: if request.auth != null || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -43,7 +43,7 @@ service cloud.firestore {
     match /reservations/{reservationId} {
       allow read: if request.auth != null || isAdmin();
       allow create: if request.auth != null;
-      allow update: if (request.auth != null && request.auth.uid == resource.data.customerId) || isAdmin();
+      allow update: if request.auth != null || isAdmin();
       allow delete: if isAdmin();
     }
 

@@ -100,7 +100,7 @@ export function listenToActiveRequest(callback: (request: CustomerRequest | null
     }
     const latestDoc = snapshot.docs[0];
     const data = latestDoc.data() as CustomerRequest;
-    if (data.status === 'active') {
+    if (data.status === 'active' || data.status === 'fulfilled') {
       callback(data);
     } else {
       callback(null);

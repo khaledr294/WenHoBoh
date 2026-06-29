@@ -48,6 +48,7 @@ interface CustomerPortalProps {
   lang: Language;
   onLogEvent: (type: SystemEvent['type'], msgAr: string, msgEn: string) => void;
   customerCoords?: { lat: number; lng: number };
+  onCustomerCoordsChange?: (coords: { lat: number; lng: number }) => void;
 }
 
 interface NotificationItem {
@@ -81,6 +82,7 @@ export default function CustomerPortal({
   lang,
   onLogEvent,
   customerCoords,
+  onCustomerCoordsChange,
 }: CustomerPortalProps) {
   const { user: firebaseUser } = useAuth();
   const [customerName, setCustomerName] = useState(firebaseUser?.displayName || (lang === 'ar' ? 'عميل مسجل' : 'Registered Customer'));
@@ -106,6 +108,30 @@ export default function CustomerPortal({
       fetchCustomerName();
     }
   }, [firebaseUser, lang]);
+
+  // Auto-fetch customer coordinates on component mount
+  useEffect(() => {
+    if (navigator.geolocation && onCustomerCoordsChange) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          onCustomerCoordsChange(coords);
+          onLogEvent(
+            'request_created_audit',
+            `تم تحديد موقعك الجغرافي تلقائياً بدقة: Lat: ${coords.lat.toFixed(4)}, Lng: ${coords.lng.toFixed(4)}`,
+            `Your location was automatically fetched: Lat: ${coords.lat.toFixed(4)}, Lng: ${coords.lng.toFixed(4)}`
+          );
+        },
+        (error) => {
+          console.warn("Auto-geolocation lookup failed:", error);
+        },
+        { enableHighAccuracy: true, timeout: 6000 }
+      );
+    }
+  }, []);
   
   // Extract user info from Firebase user
   const user = {
@@ -538,7 +564,16 @@ export default function CustomerPortal({
                 {lang === 'ar' ? 'المنتج المحجوز' : 'RESERVED PRODUCT'}
               </span>
               <span className="font-semibold text-slate-900">
-                {activeRequest?.productName}
+                {(() => {
+                  const res = responses.find(r => r.id === activeReservation.responseId);
+                  if (res?.status === 'alternative' && res.alternativeName) {
+                    return `${res.alternativeName} (${lang === 'ar' ? 'بديل لـ' : 'Alt for'} ${activeRequest?.productName || ''})`;
+                  }
+                  if (res?.confirmedProductName) {
+                    return res.confirmedProductName;
+                  }
+                  return activeRequest?.productName || (lang === 'ar' ? 'منتج طبي' : 'Medical Product');
+                })()}
               </span>
             </div>
             <div>
@@ -719,7 +754,6 @@ export default function CustomerPortal({
                 <option value={3}>{lang === 'ar' ? '٣ كم (محيطك المباشر)' : '3 km (Local)'}</option>
                 <option value={5}>{lang === 'ar' ? '٥ كم (أغلب المدينة)' : '5 km (Moderate)'}</option>
                 <option value={10}>{lang === 'ar' ? '١٠ كم (عنيزة بالكامل)' : '10 km (Citywide)'}</option>
-                <option value={50}>{lang === 'ar' ? 'إقليمي (منطقة القصيم)' : 'Regional'}</option>
               </select>
             </div>
           </div>
@@ -750,7 +784,7 @@ export default function CustomerPortal({
                       const remainingSlots = 3 - prescriptionImages.length;
                       const filesToProcess = files.slice(0, remainingSlots);
                       
-                      filesToProcess.forEach(file => {
+                      filesToProcess.forEach((file: File) => {
                         if (file.size > 2 * 1024 * 1024) {
                           alert(lang === 'ar' ? 'حجم الصورة يجب أن لا يتجاوز ٢ ميغابايت' : 'Image size must not exceed 2MB');
                           return;
@@ -944,20 +978,30 @@ export default function CustomerPortal({
 
                     {/* Price and details display */}
                     {(res.status === 'available' || res.status === 'alternative') && (
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200/40 text-base font-medium flex justify-between items-center">
-                        <div className="space-y-0.5">
+                      <div className="bg-white p-3 rounded-xl border border-slate-200/40 text-base font-medium flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div className="space-y-1">
                           {res.status === 'alternative' && (
-                            <p className="text-[10px] text-amber-300">
-                              {lang === 'ar' ? `البديل: ${res.alternativeName}` : `Alt: ${res.alternativeName}`}
+                            <p className="text-sm font-semibold text-amber-500">
+                              {lang === 'ar' ? `البديل المقترح: ${res.alternativeName}` : `Suggested Alt: ${res.alternativeName}`}
+                            </p>
+                          )}
+                          {res.status === 'available' && res.confirmedProductName && (
+                            <p className="text-sm font-semibold text-emerald-600">
+                              {lang === 'ar' ? `المنتج المؤكد: ${res.confirmedProductName}` : `Confirmed Item: ${res.confirmedProductName}`}
                             </p>
                           )}
                           {res.notes && (
-                            <p className="text-[10px] text-slate-500">
+                            <p className="text-xs text-slate-500">
                               "{res.notes}"
                             </p>
                           )}
+                          {res.alternativeImage && (
+                            <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 max-w-[120px] aspect-square shadow-sm">
+                              <img src={res.alternativeImage} alt="Alternative product" className="w-full h-full object-cover" />
+                            </div>
+                          )}
                         </div>
-                        <div className="text-end font-mono text-emerald-400 font-semibold">
+                        <div className="text-end font-mono text-emerald-450 font-bold text-lg self-end sm:self-center shrink-0">
                           {res.price ? `${res.price} SAR` : (lang === 'ar' ? 'تسعير رسمي' : 'Official Pricing')}
                         </div>
                       </div>

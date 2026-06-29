@@ -59,6 +59,8 @@ export interface PharmacyResponse {
   alternativeName?: string;
   price?: number;
   notes?: string;
+  alternativeImage?: string;
+  confirmedProductName?: string;
   respondedAt: string;
 }
 

@@ -119,9 +119,12 @@ export default function PharmacyPortal({
 
   // Response form states
   const [alternativeName, setAlternativeName] = useState('');
+  const [confirmedProductName, setConfirmedProductName] = useState('');
   const [priceInput, setPriceInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
+  const [alternativeImage, setAlternativeImage] = useState<string | null>(null);
   const [showAlternativeForm, setShowAlternativeForm] = useState(false);
+  const [showAvailableForm, setShowAvailableForm] = useState(false);
   const [viewPrescriptionModal, setViewPrescriptionModal] = useState(false);
 
   if (registrationStatus === 'loading') {
@@ -223,8 +226,10 @@ export default function PharmacyPortal({
       pharmacyId: activePharmacy.id,
       status,
       alternativeName: status === 'alternative' ? alternativeName : undefined,
+      confirmedProductName: status === 'available' ? confirmedProductName : undefined,
       price: responsePrice,
       notes: notesInput.trim() || undefined,
+      alternativeImage: status === 'alternative' ? (alternativeImage || undefined) : undefined,
       respondedAt: new Date().toISOString()
     };
 
@@ -232,26 +237,29 @@ export default function PharmacyPortal({
 
     // Reset inputs
     setAlternativeName('');
+    setConfirmedProductName('');
     setPriceInput('');
     setNotesInput('');
+    setAlternativeImage(null);
     setShowAlternativeForm(false);
+    setShowAvailableForm(false);
 
     const statusTextAr = status === 'available' 
-      ? 'متوفر' 
+      ? `متوفر (${confirmedProductName})` 
       : status === 'not_available' 
         ? 'غير متوفر' 
         : `بديل (${alternativeName})`;
     
     const statusTextEn = status === 'available' 
-      ? 'Available' 
+      ? `Available (${confirmedProductName})` 
       : status === 'not_available' 
         ? 'Out of Stock' 
         : `Alternative (${alternativeName})`;
 
     onLogEvent(
       'response_sent',
-      `أرسلت صيدلية ${activePharmacy.nameAr} رداً بـ: ${statusTextAr}`,
-      `Pharmacy ${activePharmacy.nameEn} responded with: ${statusTextEn}`
+      `أرسلت صيدلية ${activePharmacy.nameAr} رداً بـ: ${statusTextAr} بسعر ${responsePrice || 0} ريال`,
+      `Pharmacy ${activePharmacy.nameEn} responded with: ${statusTextEn} at ${responsePrice || 0} SAR`
     );
   };
 
@@ -517,57 +525,90 @@ export default function PharmacyPortal({
                     </span>
                   </div>
 
-                  {!showAlternativeForm ? (
-                    <div className="flex gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // Quick available reply
-                          handleSendResponse('available');
-                        }}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
-                      >
-                        {lang === 'ar' ? 'متوفر ✓' : 'Available ✓'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // Out of stock
-                          handleSendResponse('not_available');
-                        }}
-                        className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
-                      >
-                        {lang === 'ar' ? 'غير متوفر ✗' : 'Out of Stock ✗'}
-                      </button>
-
-                      {activeRequest.acceptsAlternative !== false && (
-                        <button
-                          type="button"
-                          onClick={() => setShowAlternativeForm(true)}
-                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
-                        >
-                          {lang === 'ar' ? 'توفير بديل 🔄' : 'Offer Alt 🔄'}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    /* Alternative product form */
-                    <div className="bg-white p-4 border border-slate-850 rounded-2xl space-y-3">
-                      <div className="flex justify-between items-center border-b border-slate-900 pb-2 mb-1">
-                        <span className="text-base font-medium font-bold text-amber-400">
-                          {lang === 'ar' ? 'اقتراح منتج بديل متوفر' : 'Propose Alternative medicine'}
+                  {showAvailableForm ? (
+                    /* Available product confirmation form */
+                    <div className="bg-white p-4 border border-slate-200 rounded-2xl space-y-3 shadow-inner">
+                      <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-1">
+                        <span className="text-base font-bold text-emerald-600">
+                          {lang === 'ar' ? 'تأكيد توفر المنتج وتحديد السعر' : 'Confirm Availability & Price'}
                         </span>
                         <button
                           type="button"
-                          onClick={() => setShowAlternativeForm(false)}
-                          className="text-[10px] text-slate-500 hover:text-slate-900"
+                          onClick={() => setShowAvailableForm(false)}
+                          className="text-[10px] text-slate-500 hover:text-slate-900 border border-slate-200 px-2 py-0.5 rounded-lg"
                         >
                           {lang === 'ar' ? 'إلغاء' : 'Cancel'}
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                            {lang === 'ar' ? 'اسم المنتج للعميل' : 'Confirmed Product Name'}
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={confirmedProductName}
+                            onChange={e => setConfirmedProductName(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-base font-medium focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                            {lang === 'ar' ? 'السعر (SAR) - مطلوب للتأكيد' : 'Price (SAR) - Required'}
+                          </label>
+                          <input
+                            type="number"
+                            required
+                            placeholder="e.g. 25"
+                            value={priceInput}
+                            onChange={e => setPriceInput(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-base font-medium focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                          {lang === 'ar' ? 'ملاحظات إضافية (مثل: موعد الاستلام، البديل، طريقة الاستخدام)' : 'Note for Customer'}
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={lang === 'ar' ? 'أدخل ملاحظات اختيارية...' : 'Optional notes...'}
+                          value={notesInput}
+                          onChange={e => setNotesInput(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-base font-medium focus:outline-none"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSendResponse('available')}
+                        disabled={!confirmedProductName || !priceInput}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-100 text-white font-bold py-2.5 rounded-xl text-base font-medium transition"
+                      >
+                        {lang === 'ar' ? 'إرسال تأكيد وتحديد السعر للعميل ✓' : 'Send Confirmation & Price ✓'}
+                      </button>
+                    </div>
+                  ) : showAlternativeForm ? (
+                    /* Alternative product form */
+                    <div className="bg-white p-4 border border-slate-200 rounded-2xl space-y-3 shadow-inner">
+                      <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-1">
+                        <span className="text-base font-bold text-amber-500">
+                          {lang === 'ar' ? 'اقتراح منتج بديل متوفر' : 'Propose Alternative Medicine'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowAlternativeForm(false)}
+                          className="text-[10px] text-slate-500 hover:text-slate-900 border border-slate-200 px-2 py-0.5 rounded-lg"
+                        >
+                          {lang === 'ar' ? 'إلغاء' : 'Cancel'}
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                             {lang === 'ar' ? 'اسم المنتج البديل' : 'Alternative Product Name'}
@@ -584,10 +625,11 @@ export default function PharmacyPortal({
 
                         <div>
                           <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                            {lang === 'ar' ? 'السعر الاختياري (SAR)' : 'Price (SAR)'}
+                            {lang === 'ar' ? 'السعر (SAR) - مطلوب للتأكيد' : 'Price (SAR) - Required'}
                           </label>
                           <input
                             type="number"
+                            required
                             placeholder="e.g. 15"
                             value={priceInput}
                             onChange={e => setPriceInput(e.target.value)}
@@ -609,14 +651,98 @@ export default function PharmacyPortal({
                         />
                       </div>
 
+                      {/* Alternative Product Image Upload */}
+                      <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3">
+                        <span className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                          {lang === 'ar' ? 'صورة المنتج البديل (اختياري)' : 'Product Photo (Optional)'}
+                        </span>
+                        
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 cursor-pointer shadow-sm active:scale-95 transition">
+                            <Upload className="w-3.5 h-3.5 text-slate-500" />
+                            <span>{lang === 'ar' ? 'تحميل صورة' : 'Upload Image'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 2 * 1024 * 1024) {
+                                  alert(lang === 'ar' ? 'حجم الصورة لا يجب أن يتجاوز ٢ ميغابايت' : 'Image size should not exceed 2MB');
+                                  return;
+                                }
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setAlternativeImage(reader.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          </label>
+
+                          {alternativeImage && (
+                            <div className="relative group w-12 h-12 rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                              <img src={alternativeImage} alt="Alt upload preview" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setAlternativeImage(null)}
+                                className="absolute inset-0 bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold"
+                              >
+                                {lang === 'ar' ? 'حذف' : 'Del'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => handleSendResponse('alternative')}
-                        disabled={!alternativeName}
-                        className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-100 text-white font-bold py-2 rounded-xl text-base font-medium transition"
+                        disabled={!alternativeName || !priceInput}
+                        className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-100 text-white font-bold py-2.5 rounded-xl text-base font-medium transition"
                       >
                         {lang === 'ar' ? 'إرسال عرض البديل للعميل' : 'Send Alternative Offer'}
                       </button>
+                    </div>
+                  ) : (
+                    /* Quotation Buttons */
+                    <div className="flex gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmedProductName(activeRequest.productName);
+                          setPriceInput('');
+                          setShowAvailableForm(true);
+                        }}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
+                      >
+                        {lang === 'ar' ? 'متوفر ✓' : 'Available ✓'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSendResponse('not_available');
+                        }}
+                        className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
+                      >
+                        {lang === 'ar' ? 'غير متوفر ✗' : 'Out of Stock ✗'}
+                      </button>
+
+                      {activeRequest.acceptsAlternative !== false && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPriceInput('');
+                            setAlternativeName('');
+                            setShowAlternativeForm(true);
+                          }}
+                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-base font-medium transition"
+                        >
+                          {lang === 'ar' ? 'توفير بديل 🔄' : 'Offer Alt 🔄'}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

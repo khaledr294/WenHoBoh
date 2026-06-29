@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Pharmacy, CustomerRequest, Reservation, Language } from '../types';
-import { MapPin, Navigation, Map as MapIcon, Building2, AlertTriangle } from 'lucide-react';
-import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
+import { MapPin, Navigation, Map as MapIcon, Building2 } from 'lucide-react';
 
 interface InteractiveMapProps {
   pharmacies: Pharmacy[];
@@ -28,13 +27,6 @@ const MAX_LAT = 26.105;
 const MIN_LNG = 43.965;
 const MAX_LNG = 44.015;
 
-// Fetch API Key from env configurations
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
-
 /**
  * Helper to map (lat, lng) coordinates to percentage on a 100x100 SVG container
  */
@@ -46,136 +38,6 @@ const mapCoordsToPercent = (lat: number, lng: number) => {
     y: Math.max(2, Math.min(98, y)) 
   };
 };
-
-/**
- * MapCircle: Geographically accurate circle for active requests inside live Google Maps
- */
-function MapCircle({ center, radiusKm }: { center: { lat: number; lng: number }; radiusKm: number }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map || typeof window === 'undefined' || !(window as any).google || !(window as any).google.maps) return;
-
-    try {
-      const circle = new (window as any).google.maps.Circle({
-        strokeColor: '#10b981',
-        strokeOpacity: 0.5,
-        strokeWeight: 2,
-        fillColor: '#10b981',
-        fillOpacity: 0.12,
-        map,
-        center,
-        radius: radiusKm * 1000, // convert km to meters
-      });
-
-      return () => {
-        circle.setMap(null);
-      };
-    } catch (e) {
-      console.error("Failed to render Google Maps Circle:", e);
-    }
-  }, [map, center.lat, center.lng, radiusKm]);
-
-  return null;
-}
-
-/**
- * MapController: Re-centers map smoothly when location changes inside live Google Maps
- */
-function MapController({ customerCoords }: { customerCoords: { lat: number; lng: number } }) {
-  const map = useMap();
-  useEffect(() => {
-    if (map) {
-      try {
-        map.panTo(customerCoords);
-      } catch (e) {
-        console.error("Failed to pan map to customer coordinates:", e);
-      }
-    }
-  }, [map, customerCoords.lat, customerCoords.lng]);
-  return null;
-}
-
-/**
- * RouteDisplay: Uses Google Maps standard Directions Service to render real driving routes with safe try/catches
- */
-function RouteDisplay({ 
-  origin, 
-  destination, 
-  lang,
-  onRouteComputed 
-}: {
-  origin: { lat: number; lng: number };
-  destination: { lat: number; lng: number };
-  lang: Language;
-  onRouteComputed: (info: { distanceText: string; durationText: string } | null) => void;
-}) {
-  const map = useMap();
-  const [directionsRenderer, setDirectionsRenderer] = useState<any>(null);
-
-  useEffect(() => {
-    if (!map || typeof window === 'undefined' || !(window as any).google || !(window as any).google.maps) return;
-
-    try {
-      const renderer = new (window as any).google.maps.DirectionsRenderer({
-        map,
-        suppressMarkers: true,
-        polylineOptions: {
-          strokeColor: '#3b82f6',
-          strokeOpacity: 0.8,
-          strokeWeight: 6,
-        }
-      });
-      setDirectionsRenderer(renderer);
-
-      return () => {
-        renderer.setMap(null);
-      };
-    } catch (e) {
-      console.error("Failed to construct DirectionsRenderer:", e);
-    }
-  }, [map]);
-
-  useEffect(() => {
-    if (!directionsRenderer || typeof window === 'undefined' || !(window as any).google || !(window as any).google.maps || !origin || !destination) return;
-
-    try {
-      const directionsService = new (window as any).google.maps.DirectionsService();
-      directionsService.route(
-        {
-          origin: new (window as any).google.maps.LatLng(origin.lat, origin.lng),
-          destination: new (window as any).google.maps.LatLng(destination.lat, destination.lng),
-          travelMode: (window as any).google.maps.TravelMode.DRIVING,
-        },
-        (result: any, status: any) => {
-          if (status === 'OK' && result) {
-            try {
-              directionsRenderer.setDirections(result);
-              const route = result.routes[0];
-              if (route && route.legs[0]) {
-                const leg = route.legs[0];
-                onRouteComputed({
-                  distanceText: leg.distance.text,
-                  durationText: leg.duration.text,
-                });
-              }
-            } catch (err) {
-              console.error("Error setting directions in renderer:", err);
-            }
-          } else {
-            console.warn("Directions request failed due to: " + status);
-            onRouteComputed(null);
-          }
-        }
-      );
-    } catch (e) {
-      console.error("Directions service failed:", e);
-      onRouteComputed(null);
-    }
-  }, [directionsRenderer, origin.lat, origin.lng, destination.lat, destination.lng, lang, onRouteComputed]);
-
-  return null;
-}
 
 export default function InteractiveMap({
   pharmacies,
@@ -190,35 +52,230 @@ export default function InteractiveMap({
   
   // Choose default mode. We default to Vector Map to guarantee a pristine, zero-error load experience.
   const [useLiveMap, setUseLiveMap] = useState<boolean>(false);
-  const [mapsAuthFailed, setMapsAuthFailed] = useState<boolean>(false);
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState<boolean>(false);
-  const [liveRouteInfo, setLiveRouteInfo] = useState<{ distanceText: string; durationText: string } | null>(null);
+  const [leafletMap, setLeafletMap] = useState<any>(null);
+  
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const leafletCustomerMarkerRef = useRef<any>(null);
+  const leafletPharmacyMarkersRef = useRef<any[]>([]);
+  const leafletCircleRef = useRef<any>(null);
+  const leafletRoutePolylineRef = useRef<any>(null);
 
-  const handleRouteComputed = useCallback((info: { distanceText: string; durationText: string } | null) => {
-    setLiveRouteInfo(info);
-  }, []);
-
-  // Global listener for Google Maps Authentication failure
+  // Initialize Leaflet Map
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const previousFailureHandler = (window as any).gm_authFailure;
-      
-      (window as any).gm_authFailure = () => {
-        console.warn("Google Maps Auth Failure detected. Reverting instantly to pristine local Vector Map mode.");
-        setMapsAuthFailed(true);
-        setUseLiveMap(false);
-        if (previousFailureHandler) {
-          try {
-            previousFailureHandler();
-          } catch (e) {}
-        }
-      };
-
-      return () => {
-        (window as any).gm_authFailure = previousFailureHandler;
-      };
+    if (!useLiveMap || !mapContainerRef.current) {
+      if (leafletMap) {
+        leafletMap.remove();
+        setLeafletMap(null);
+      }
+      return;
     }
+
+    const L = (window as any).L;
+    if (!L) {
+      console.error("Leaflet global L is not loaded. Make sure the CDN links are in index.html");
+      return;
+    }
+
+    const map = L.map(mapContainerRef.current, {
+      zoomControl: true,
+      attributionControl: false
+    }).setView([customerCoords.lat, customerCoords.lng], 13);
+
+    // CartoDB Voyager tiles (completely free and premium looking)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    setLeafletMap(map);
+
+    return () => {
+      map.remove();
+      setLeafletMap(null);
+    };
+  }, [useLiveMap]);
+
+  // Synchronize Leaflet map state with props
+  useEffect(() => {
+    if (!leafletMap) return;
+
+    const L = (window as any).L;
+    if (!L) return;
+
+    // 1. Manage Customer Marker
+    if (!leafletCustomerMarkerRef.current) {
+      const customerIcon = L.divIcon({
+        className: 'custom-customer-leaflet-icon',
+        html: `
+          <div class="flex flex-col items-center" style="transform: translate(-15px, -30px); width: 30px; height: 30px;">
+            <div class="bg-red-500 p-2 rounded-full border border-white shadow-xl scale-110 relative flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping"></span>
+            </div>
+          </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 30]
+      });
+
+      const customerMarker = L.marker([customerCoords.lat, customerCoords.lng], {
+        icon: customerIcon,
+        draggable: true
+      }).addTo(leafletMap);
+
+      customerMarker.on('dragend', () => {
+        const position = customerMarker.getLatLng();
+        if (onCustomerCoordsChange) {
+          onCustomerCoordsChange({ lat: position.lat, lng: position.lng });
+        }
+      });
+
+      leafletCustomerMarkerRef.current = customerMarker;
+    } else {
+      const currentLatLng = leafletCustomerMarkerRef.current.getLatLng();
+      if (currentLatLng.lat !== customerCoords.lat || currentLatLng.lng !== customerCoords.lng) {
+        leafletCustomerMarkerRef.current.setLatLng([customerCoords.lat, customerCoords.lng]);
+        leafletMap.panTo([customerCoords.lat, customerCoords.lng]);
+      }
+    }
+
+    // 2. Manage Broadcast Area Circle
+    if (leafletCircleRef.current) {
+      leafletMap.removeLayer(leafletCircleRef.current);
+      leafletCircleRef.current = null;
+    }
+    if (activeRequest && activeRequest.status === 'active') {
+      const circle = L.circle([customerCoords.lat, customerCoords.lng], {
+        color: '#10b981',
+        fillColor: '#10b981',
+        fillOpacity: 0.12,
+        weight: 2,
+        dashArray: '5, 5',
+        radius: activeRequest.radiusKm * 1000 // Convert km to meters
+      }).addTo(leafletMap);
+      leafletCircleRef.current = circle;
+    }
+
+    // 3. Manage Pharmacy Markers
+    leafletPharmacyMarkersRef.current.forEach(m => leafletMap.removeLayer(m));
+    leafletPharmacyMarkersRef.current = [];
+
+    pharmacies.forEach(pharmacy => {
+      const isSelected = selectedPharmacyId === pharmacy.id;
+      const isReserved = activeReservation?.pharmacyId === pharmacy.id;
+
+      let markerColor = 'bg-emerald-600 border-emerald-500 text-white';
+      if (isReserved) {
+        markerColor = 'bg-blue-600 border-blue-500 text-white animate-bounce';
+      } else if (isSelected) {
+        markerColor = 'bg-amber-500 border-amber-400 text-white scale-110';
+      }
+
+      const pharmacyIcon = L.divIcon({
+        className: 'custom-pharmacy-leaflet-icon',
+        html: `
+          <div class="flex flex-col items-center cursor-pointer select-none" style="transform: translate(-15px, -15px)">
+            <div class="p-1.5 rounded-xl border-2 ${markerColor} shadow-lg transition-all flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2005/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2Z"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2Z"/><path d="M10 6h4Z"/><path d="M10 10h4Z"/><path d="M10 14h4Z"/><path d="M10 18h4Z"/></svg>
+            </div>
+            <div class="bg-white/95 text-[9px] font-bold text-slate-800 px-1.5 py-0.5 rounded border border-slate-200 mt-0.5 whitespace-nowrap shadow">
+              ${lang === 'ar' ? pharmacy.nameAr : pharmacy.nameEn}
+            </div>
+          </div>
+        `,
+        iconSize: [30, 30]
+      });
+
+      const marker = L.marker([pharmacy.latitude, pharmacy.longitude], {
+        icon: pharmacyIcon
+      }).addTo(leafletMap);
+
+      marker.on('click', () => {
+        if (onSelectPharmacy) onSelectPharmacy(pharmacy.id);
+      });
+
+      leafletPharmacyMarkersRef.current.push(marker);
+    });
+
+    // 4. Manage Routing Polyline
+    if (leafletRoutePolylineRef.current) {
+      leafletMap.removeLayer(leafletRoutePolylineRef.current);
+      leafletRoutePolylineRef.current = null;
+    }
+
+    const reservedPharmacy = activeReservation
+      ? pharmacies.find(p => p.id === activeReservation.pharmacyId)
+      : null;
+
+    if (reservedPharmacy) {
+      const latlngs = [
+        [customerCoords.lat, customerCoords.lng],
+        [reservedPharmacy.latitude, reservedPharmacy.longitude]
+      ];
+      const polyline = L.polyline(latlngs, {
+        color: '#3b82f6',
+        weight: 5,
+        opacity: 0.85,
+        dashArray: '8, 6'
+      }).addTo(leafletMap);
+      
+      leafletRoutePolylineRef.current = polyline;
+      leafletMap.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+    }
+
+  }, [leafletMap, customerCoords, pharmacies, activeRequest, activeReservation, selectedPharmacyId, lang]);
+
+  // Clean up refs on unmount
+  useEffect(() => {
+    return () => {
+      if (leafletCustomerMarkerRef.current) leafletCustomerMarkerRef.current = null;
+      if (leafletCircleRef.current) leafletCircleRef.current = null;
+      if (leafletRoutePolylineRef.current) leafletRoutePolylineRef.current = null;
+      leafletPharmacyMarkersRef.current = [];
+    };
   }, []);
+
+  const handleLocateUser = () => {
+    if (!navigator.geolocation) {
+      alert(lang === 'ar' ? 'المتصفح لا يدعم تحديد الموقع الجغرافي' : 'Geolocation is not supported by your browser');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        if (onCustomerCoordsChange) {
+          onCustomerCoordsChange(coords);
+        }
+        
+        // Pan Leaflet map to new coords if available
+        if (leafletMap) {
+          leafletMap.setView([coords.lat, coords.lng], 14);
+        }
+
+        // Clamp check for Simulated Vector Map fallback warning
+        const isOutside = coords.lat < MIN_LAT || coords.lat > MAX_LAT || coords.lng < MIN_LNG || coords.lng > MAX_LNG;
+        if (isOutside && !useLiveMap) {
+          alert(
+            lang === 'ar'
+              ? '📍 تم جلب موقعك الجغرافي بنجاح! بما أن موقعك الحالي يقع خارج نطاق عنيزة، سيتم تقريبه وتثبيته على الخريطة التفاعلية الرقمية لتجربة محاكاة النظام.'
+              : '📍 Location fetched successfully! Since you are outside Unaizah, your coordinates are clamped for simulation on the Digital Map.'
+          );
+        }
+      },
+      (error) => {
+        console.error("Manual geolocation retrieval failed:", error);
+        alert(
+          lang === 'ar'
+            ? '❌ فشل سحب الموقع الجغرافي. يرجى تفعيل صلاحيات تحديد الموقع في المتصفح.'
+            : '❌ Failed to fetch your location. Please enable location services in your browser.'
+        );
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
+    );
+  };
 
   const reservedPharmacy = activeReservation 
     ? pharmacies.find(p => p.id === activeReservation.pharmacyId)
@@ -296,149 +353,46 @@ export default function InteractiveMap({
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
           <span className="text-xs font-bold text-slate-900 font-mono tracking-tight flex items-center gap-1.5">
-            <MapIcon className="w-3.5 h-3.5 text-emerald-400" />
+            <MapIcon className="w-3.5 h-3.5 text-emerald-455" />
             {useLiveMap 
-              ? (lang === 'ar' ? 'خرائط جوجل المباشرة' : 'Live Google Maps')
-              : (lang === 'ar' ? 'خريطة عنيزة الرقمية (تفاعلية)' : 'Interactive Digital Map (Unaizah)')
+              ? (lang === 'ar' ? 'الخريطة المباشرة الجغرافية' : 'Live Geographic Map')
+              : (lang === 'ar' ? 'خريطة عنيزة التفاعلية' : 'Interactive Map (Unaizah)')
             }
           </span>
         </div>
 
         {/* Seamless Selector & Status Indicator */}
         <div className="flex items-center gap-2">
-          
-          {/* Auth warning badge */}
-          {mapsAuthFailed && (
-            <div className="bg-amber-950/80 text-amber-400 border border-amber-900/40 text-[9px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
-              <AlertTriangle className="w-2.5 h-2.5" />
-              <span>{lang === 'ar' ? 'الرمز مقيد بالنطاق' : 'API Key Domain Restricted'}</span>
-            </div>
-          )}
+          {/* Locate Me Button */}
+          <button
+            onClick={handleLocateUser}
+            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-250 active:scale-95 transition text-[10px] font-bold px-2.5 py-1.5 rounded-xl cursor-pointer flex items-center gap-1"
+            title={lang === 'ar' ? 'تحديد الموقع تلقائياً من نظام العميل' : 'Fetch location from device'}
+          >
+            <Navigation className="w-3 h-3 text-emerald-600" />
+            <span>{lang === 'ar' ? 'تحديد موقعي' : 'تحديد موقعي'}</span>
+          </button>
 
           {/* Toggle Button */}
           <button
-            onClick={() => {
-              if (mapsAuthFailed && !useLiveMap) {
-                // If it failed already, alert instructions on toggle attempt
-                alert(
-                  lang === 'ar' 
-                    ? '⚠️ الرمز البرمجي لخرائط جوجل الحالي مقيد ومحمي لروابط محددة. تم تشغيل الخريطة الرقمية التفاعلية البديلة تلقائياً لتعمل بكفاءة مطلقة بدون أي قيود!'
-                    : '⚠️ The configured Google Maps API Key is referrer-restricted to specified domains. The app is seamlessly using the alternative Vector map to run perfectly with complete capabilities!'
-                );
-              }
-              setUseLiveMap(!useLiveMap);
-            }}
+            onClick={() => setUseLiveMap(!useLiveMap)}
             className="bg-slate-50 hover:bg-slate-100 border border-slate-200 active:scale-95 transition text-[10px] font-bold text-slate-700 px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1"
           >
             {useLiveMap 
               ? (lang === 'ar' ? '🗺️ الخريطة الرقمية' : '🗺️ Switch to Vector Map')
-              : (lang === 'ar' ? '🌐 خرائط جوجل المباشرة' : '🌐 Switch to Live Maps')
+              : (lang === 'ar' ? '🌐 الخريطة الحية' : '🌐 Switch to Live Map')
             }
           </button>
         </div>
 
       </div>
 
-      {/* Warning message if using vector map but auth failed */}
-      {!useLiveMap && mapsAuthFailed && (
-        <div className="bg-amber-950/40 border-b border-amber-900/30 px-3 py-1.5 text-[10px] text-amber-300 flex items-center gap-1.5 z-10">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
-          <span className="leading-tight">
-            {lang === 'ar' 
-              ? 'موقع العرض الخاص بك يعمل عبر الخريطة الرقمية لعنيزة (الرمز البرمجي محمي بنطاق خارجي). كافة الصلاحيات تعمل بكفاءة تامة!' 
-              : 'Your sandbox is optimized via Vector Map (Google Maps key restricted to official domain). All functions work flawlessly!'}
-          </span>
-        </div>
-      )}
-
       {/* Main Map Content Window */}
       <div className="flex-1 relative overflow-hidden">
         
         {useLiveMap ? (
-          /* Live Google Maps */
-          <APIProvider apiKey={API_KEY} version="weekly">
-            <Map
-              defaultCenter={MAP_CENTER}
-              defaultZoom={13}
-              mapId="DEMO_MAP_ID"
-              internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-              style={{ width: '100%', height: '100%' }}
-              disableDefaultUI={true}
-              zoomControl={true}
-            >
-              <MapController customerCoords={customerCoords} />
-
-              {/* Broadcast Area Radius Circle */}
-              {activeRequest && (
-                <MapCircle 
-                  center={customerCoords} 
-                  radiusKm={activeRequest.radiusKm} 
-                />
-              )}
-              
-              {/* Customer Draggable Pin */}
-              <AdvancedMarker
-                position={customerCoords}
-                draggable={true}
-                onDragEnd={(e) => {
-                  if (e.latLng && onCustomerCoordsChange) {
-                    onCustomerCoordsChange({ lat: e.latLng.lat(), lng: e.latLng.lng() });
-                  }
-                }}
-              >
-                <div className="flex flex-col items-center select-none" style={{ transform: 'translate(0, -10px)' }}>
-                  <div className="bg-red-500 p-2 rounded-full border-2 border-white shadow-xl scale-110 cursor-move relative flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-slate-900" />
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping"></span>
-                  </div>
-                  <div className="bg-white/95 text-[9px] font-bold text-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 mt-1 whitespace-nowrap">
-                    {lang === 'ar' ? 'موقعك الحالي (اسحب)' : 'Your Location (Drag)'}
-                  </div>
-                </div>
-              </AdvancedMarker>
-
-              {/* Pharmacy Pins */}
-              {pharmacies.map((pharmacy) => {
-                const isSelected = selectedPharmacyId === pharmacy.id;
-                const isReserved = activeReservation?.pharmacyId === pharmacy.id;
-
-                let markerColor = 'bg-emerald-600 border-emerald-500';
-                if (isReserved) {
-                  markerColor = 'bg-blue-600 border-blue-500 animate-bounce';
-                } else if (isSelected) {
-                  markerColor = 'bg-amber-500 border-amber-400 scale-110';
-                }
-
-                return (
-                  <AdvancedMarker
-                    key={pharmacy.id}
-                    position={{ lat: pharmacy.latitude, lng: pharmacy.longitude }}
-                    onClick={() => onSelectPharmacy && onSelectPharmacy(pharmacy.id)}
-                  >
-                    <div className="flex flex-col items-center cursor-pointer select-none">
-                      <div className={`p-1.5 rounded-xl border-2 ${markerColor} text-slate-900 shadow-lg transition-all`}>
-                        <Building2 className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="bg-white/95 text-[9px] font-bold text-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 mt-0.5 whitespace-nowrap">
-                        {lang === 'ar' ? pharmacy.nameAr : pharmacy.nameEn}
-                      </div>
-                    </div>
-                  </AdvancedMarker>
-                );
-              })}
-
-              {/* Directions Polyline Routing Overlay */}
-              {reservedPharmacy && (
-                <RouteDisplay
-                  origin={customerCoords}
-                  destination={{ lat: reservedPharmacy.latitude, lng: reservedPharmacy.longitude }}
-                  lang={lang}
-                  onRouteComputed={handleRouteComputed}
-                />
-              )}
-
-            </Map>
-          </APIProvider>
+          /* Live Leaflet Map Container */
+          <div ref={mapContainerRef} className="w-full h-full" style={{ zIndex: 1 }} />
         ) : (
           /* High-Fidelity local Simulated Vector Map of Unaizah */
           <div 
@@ -488,7 +442,7 @@ export default function InteractiveMap({
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               
               {/* Broadcast Area Radius Circle overlay */}
-              {activeRequest && (
+              {activeRequest && activeRequest.status === 'active' && (
                 <circle 
                   cx={`${pPatient.x}%`} 
                   cy={`${pPatient.y}%`} 
@@ -540,7 +494,6 @@ export default function InteractiveMap({
 
             {/* Draggable Patient Marker */}
             <div 
-
               className="absolute pointer-events-none flex flex-col items-center"
               style={{ 
                 left: `${pPatient.x}%`, 
@@ -554,7 +507,7 @@ export default function InteractiveMap({
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full animate-ping"></span>
               </div>
               <div className="bg-white/95 text-[9px] font-bold text-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 mt-1 whitespace-nowrap">
-                {lang === 'ar' ? 'موقعك (اسحب الدبوس)' : 'You (Drag map)'}
+                {lang === 'ar' ? 'موقعك (انقر لنقله)' : 'You (Click map)'}
               </div>
             </div>
 
@@ -618,15 +571,9 @@ export default function InteractiveMap({
                 {lang === 'ar' ? 'الاتجاه والمسار الجغرافي الفعلي' : 'ACTUAL GEOGRAPHICAL ROUTING'}
               </span>
               <span className="text-[10px] md:text-[11px] font-bold text-slate-900 block">
-                {useLiveMap && liveRouteInfo ? (
-                  lang === 'ar' 
-                    ? `صيدلية: ${reservedPharmacy?.nameAr} • المسافة: ${liveRouteInfo.distanceText} (${liveRouteInfo.durationText})` 
-                    : `Pharmacy: ${reservedPharmacy?.nameEn} • Distance: ${liveRouteInfo.distanceText} (${liveRouteInfo.durationText})`
-                ) : (
-                  lang === 'ar'
-                    ? `صيدلية: ${reservedPharmacy?.nameAr} • المسافة: ${simulatedRoute?.distanceText} (${simulatedRoute?.durationText})`
-                    : `Pharmacy: ${reservedPharmacy?.nameEn} • Distance: ${simulatedRoute?.distanceText} (${simulatedRoute?.durationText})`
-                )}
+                {lang === 'ar'
+                  ? `صيدلية: ${reservedPharmacy?.nameAr} • المسافة: ${simulatedRoute?.distanceText} (${simulatedRoute?.durationText})`
+                  : `Pharmacy: ${reservedPharmacy?.nameEn} • Distance: ${simulatedRoute?.distanceText} (${simulatedRoute?.durationText})`}
               </span>
             </div>
           </div>
@@ -634,7 +581,7 @@ export default function InteractiveMap({
             href={`https://www.google.com/maps/dir/?api=1&origin=${customerCoords.lat},${customerCoords.lng}&destination=${reservedPharmacy?.latitude},${reservedPharmacy?.longitude}&travelmode=driving`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-500 text-slate-900 font-bold text-[9px] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
+            className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[9px] px-2.5 py-1.5 rounded-xl transition cursor-pointer"
           >
             {lang === 'ar' ? 'افتح الاتجاهات' : 'Open Directions'}
           </a>

@@ -345,6 +345,7 @@ export default function App() {
                   lang={lang}
                   onLogEvent={handleLogEvent}
                   customerCoords={customerCoords}
+                  onCustomerCoordsChange={setCustomerCoords}
                 />
               </div>
             </main>
